@@ -1,0 +1,7 @@
+{
+  "name": "Biometric Face Scanner",
+  "description": "A futuristic web application that uses the device's camera to simulate a biometric face scan. It detects a face, captures a snapshot, and runs a scanning animation before confirming a successful scan.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

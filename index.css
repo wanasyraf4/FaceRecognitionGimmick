@@ -1,0 +1,56 @@
+/* === FaceMesh Glow Animation === */
+.face-mesh-group {
+    animation: neural-shift 5s infinite linear alternate;
+}
+
+.face-mesh-poly { /* Renamed from face-mesh-path */
+  stroke: rgba(0, 255, 255, 0.9);
+  stroke-dasharray: 150;
+  stroke-dashoffset: 150;
+  animation:
+    draw-mesh 2s ease-in-out forwards,
+    glow-mesh 3s infinite ease-in-out alternate;
+  filter: drop-shadow(0 0 4px rgba(0, 255, 255, 0.8));
+}
+
+.face-mesh-dot {
+  fill: rgba(0, 255, 255, 0.9);
+  animation: 
+    pulse-dot 2s ease-in-out infinite alternate,
+    fade-in-dots 0.5s ease-in forwards 2.5s;
+  filter: drop-shadow(0 0 6px rgba(0, 255, 255, 0.7));
+  opacity: 0;
+}
+
+@keyframes draw-mesh {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes fade-in-dots {
+    to { opacity: 1; }
+}
+
+@keyframes glow-mesh {
+  0% { opacity: 0.5; filter: drop-shadow(0 0 4px rgba(0,255,255,0.4)); }
+  100% { opacity: 1; filter: drop-shadow(0 0 8px rgba(0,255,255,1)); }
+}
+
+@keyframes pulse-dot {
+  0% { r: 0.8; opacity: 0.6; }
+  100% { r: 1.5; opacity: 1; }
+}
+
+@keyframes neural-shift {
+  0% { transform: translate(0.3px, 0.5px) rotate(0.05deg); }
+  10% { transform: translate(-0.2px, -0.3px) rotate(-0.02deg); }
+  20% { transform: translate(0.4px, 0.1px) rotate(0.03deg); }
+  30% { transform: translate(-0.5px, 0.3px) rotate(-0.05deg); }
+  40% { transform: translate(0.1px, -0.4px) rotate(0.01deg); }
+  50% { transform: translate(-0.3px, 0.2px) rotate(-0.04deg); }
+  60% { transform: translate(0.5px, -0.1px) rotate(0.02deg); }
+  70% { transform: translate(-0.1px, 0.4px) rotate(-0.03deg); }
+  80% { transform: translate(0.2px, -0.5px) rotate(0.04deg); }
+  90% { transform: translate(-0.4px, 0.1px) rotate(-0.01deg); }
+  100% { transform: translate(0.3px, 0.5px) rotate(0.05deg); }
+}
+

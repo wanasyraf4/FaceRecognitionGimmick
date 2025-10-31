@@ -188,10 +188,8 @@ const FaceScanner: React.FC = () => {
     }
 
     if (status === ScannerStatus.WELCOME) {
-        const timer = setTimeout(() => {
-            handleReset();
-        }, 10000); // 10 seconds for welcome message, then reset
-        return () => clearTimeout(timer);
+        // Stays on this screen until "Proceed" is clicked.
+        return;
     }
 
     if (status === ScannerStatus.SUCCESS || status === ScannerStatus.ERROR) {
@@ -399,21 +397,31 @@ const FaceScanner: React.FC = () => {
                     </div>
                   )}
                   {status === ScannerStatus.WELCOME && (
-                      <div className="text-center welcome-text-container">
-                          <p className="text-xl md:text-2xl font-semibold text-slate-300 mb-4">WELCOME TO</p>
-                          <h2 className="text-2xl md:text-3xl font-bold text-cyan-300 leading-tight">
-                              INTERNATIONAL CONFERENCE 
-                              <br/>
-                              ON 
-                              <br/>
-                              FINANCIAL CRIME 
-                              <br/>
-                              AND 
-                              <br/>
-                              COUNTER TERRORISM FINANCING 
-                              <br/>
-                              2025
-                          </h2>
+                      <div className="flex flex-col items-center justify-center text-center">
+                          <div className="welcome-text-container">
+                              <p className="text-xl md:text-2xl font-semibold text-slate-300 mb-4">WELCOME TO</p>
+                              <h2 className="text-2xl md:text-3xl font-bold text-cyan-300 leading-tight">
+                                  INTERNATIONAL CONFERENCE 
+                                  <br/>
+                                  ON 
+                                  <br/>
+                                  FINANCIAL CRIME 
+                                  <br/>
+                                  AND 
+                                  <br/>
+                                  COUNTER TERRORISM FINANCING 
+                                  <br/>
+                                  2025
+                              </h2>
+                          </div>
+                          <div className="mt-12 animate-proceed-button-welcome">
+                              <button
+                                  onClick={handleReset}
+                                  className="px-8 py-3 bg-cyan-500 text-slate-900 font-bold uppercase tracking-widest rounded-md hover:bg-cyan-400 transition-all duration-300 shadow-[0_0_15px_rgba(0,255,255,0.4)] hover:shadow-[0_0_25px_rgba(0,255,255,0.7)]"
+                              >
+                                  Proceed
+                              </button>
+                          </div>
                       </div>
                   )}
               </div>
@@ -430,8 +438,7 @@ const FaceScanner: React.FC = () => {
       <div className="w-full aspect-square flex items-center justify-center">{renderContent()}</div>
       
       {status === ScannerStatus.SCAN_PASSED && (
-        <>
-          <div className="text-center mt-4">
+        <div className="text-center mt-4">
             <div className="animate-name-position">
               <p className="text-4xl font-bold text-slate-100">Name: Affendi Rashdi</p>
               <p className="text-4xl text-cyan-400">Position: DG LFSA</p>
@@ -440,7 +447,6 @@ const FaceScanner: React.FC = () => {
               <p className="text-4xl font-bold text-red-500">Risk: High</p>
             </div>
           </div>
-        </>
       )}
 
       <div className="h-12 flex items-center justify-center text-center px-4 py-2 mt-4 border-t border-cyan-500/20">

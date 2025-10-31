@@ -104,3 +104,81 @@ export const FaceMeshIcon: React.FC<IconProps> = ({ className }) => (
       </g>
     </svg>
 );
+
+export const AmlPassedIcon: React.FC<IconProps> = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={1.5}
+  >
+    <path
+      className="aml-icon-shield"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M12 2L4 5v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V5l-8-3z"
+    />
+    <path
+      className="aml-icon-checkmark"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M9 12.5l2 2 4-4"
+    />
+  </svg>
+);
+
+export const WorldCheckIcon: React.FC<IconProps> = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={1.5}
+  >
+    <path
+      className="world-check-icon-globe"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M12 21a9 9 0 100-18 9 9 0 000 18z M3.6 9h16.8 M3.6 15h16.8 M11.25 3c1.13 4.2 1.13 13.8 0 18 M12.75 3c-1.13 4.2-1.13 13.8 0 18"
+    />
+    <path
+      className="world-check-icon-checkmark"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M9 12l2 2 4-4"
+    />
+  </svg>
+);
+
+export const EkycIcon: React.FC<IconProps> = ({ className }) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.5}
+    >
+      <path
+        className="ekyc-icon-card"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4.5 3.75h15A2.25 2.25 0 0121.75 6v12A2.25 2.25 0 0119.5 20.25h-15A2.25 2.25 0 012.25 18V6A2.25 2.25 0 014.5 3.75z"
+      />
+      <path
+        className="ekyc-icon-checkmark"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9 12.5l2 2 4-4"
+      />
+      <path
+        className="ekyc-icon-card"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M6.25 8.75a2 2 0 114 0 2 2 0 01-4 0zM6.25 15.75h8"
+      />
+    </svg>
+);

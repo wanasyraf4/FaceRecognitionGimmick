@@ -54,3 +54,245 @@
   100% { transform: translate(0.3px, 0.5px) rotate(0.05deg); }
 }
 
+/* === AML Tag Animation === */
+.animate-aml-tag .connecting-line {
+  animation: draw-line 0.4s ease-out forwards;
+  width: 0; /* Start at 0 width */
+}
+
+.animate-aml-tag .tag-icon {
+  opacity: 0;
+  transform: translateY(-20px) scale(0.7);
+  animation: 
+    tag-icon-appear 0.5s ease-out forwards 0.2s,
+    icon-glow-pink 2s infinite ease-in-out 1.3s; /* Add glow, start after drawing */
+}
+
+/* AML Icon SVG Styles */
+.aml-icon-shield {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: draw-path 0.6s ease-out forwards 0.5s; /* Start after icon starts appearing */
+}
+
+.aml-icon-checkmark {
+  stroke-dasharray: 20;
+  stroke-dashoffset: 20;
+  animation: draw-path 0.3s ease-out forwards 1s; /* Start after shield is mostly drawn */
+}
+
+.animate-aml-tag .tag-box {
+  opacity: 0; /* Start invisible */
+  transform: translateY(20px) scale(0.8); /* Initial state for animation */
+  animation: 
+    tag-appear 0.5s ease-out forwards 0.2s,
+    tag-pulse-glow 1s ease-in-out forwards 0.7s;
+}
+
+/* === World Check Tag Animation === */
+.animate-world-check-tag .connecting-line {
+  animation: draw-line 0.4s ease-out forwards 0.4s; /* Staggered start */
+  width: 0;
+}
+
+.animate-world-check-tag .tag-icon {
+  opacity: 0;
+  transform: translateY(-20px) scale(0.7);
+  animation: 
+    tag-icon-appear 0.5s ease-out forwards 0.6s, /* Staggered start */
+    icon-glow-cyan 2s infinite ease-in-out 1.7s; /* Staggered start */
+}
+
+/* World Check Icon SVG Styles */
+.world-check-icon-globe {
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+  animation: draw-path 0.8s ease-out forwards 0.9s; /* Staggered start */
+}
+
+.world-check-icon-checkmark {
+  stroke-dasharray: 20;
+  stroke-dashoffset: 20;
+  animation: draw-path 0.3s ease-out forwards 1.4s; /* Staggered start */
+}
+
+.animate-world-check-tag .tag-box {
+  opacity: 0;
+  transform: translateY(20px) scale(0.8);
+  animation: 
+    tag-appear 0.5s ease-out forwards 0.6s, /* Staggered start */
+    tag-pulse-glow-cyan 1s ease-in-out forwards 1.1s; /* Staggered start */
+}
+
+/* === eKYC Tag Animation === */
+.animate-ekyc-tag .connecting-line {
+    animation: draw-line 0.4s ease-out forwards 0.8s; /* Staggered start */
+    width: 0;
+}
+
+.animate-ekyc-tag .tag-icon {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.7);
+    animation: 
+      tag-icon-appear 0.5s ease-out forwards 1s, /* Staggered start */
+      icon-glow-green 2s infinite ease-in-out 2.1s; /* Staggered start */
+}
+
+/* eKYC Icon SVG Styles */
+.ekyc-icon-card {
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    animation: draw-path 0.8s ease-out forwards 1.3s; /* Staggered start */
+}
+
+.ekyc-icon-checkmark {
+    stroke-dasharray: 20;
+    stroke-dashoffset: 20;
+    animation: draw-path 0.3s ease-out forwards 1.8s; /* Staggered start */
+}
+
+.animate-ekyc-tag .tag-box {
+    opacity: 0;
+    transform: translateY(20px) scale(0.8);
+    animation: 
+      tag-appear 0.5s ease-out forwards 1s, /* Staggered start */
+      tag-pulse-glow-green 1s ease-in-out forwards 1.5s; /* Staggered start */
+}
+
+
+/* === Keyframes & Shared Styles === */
+@keyframes draw-line {
+  to { width: 4rem; /* Equivalent of w-16 in Tailwind */ }
+}
+
+@keyframes tag-icon-appear {
+  0% { opacity: 0; transform: translateY(-20px) scale(0.7); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes draw-path {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes icon-glow-pink {
+  50% { filter: drop-shadow(0 0 12px rgba(236, 72, 153, 1)); }
+}
+
+@keyframes icon-glow-cyan {
+  50% { filter: drop-shadow(0 0 12px rgba(34, 211, 238, 1)); }
+}
+
+@keyframes icon-glow-green {
+  50% { filter: drop-shadow(0 0 12px rgba(74, 222, 128, 1)); }
+}
+
+@keyframes tag-appear {
+  0% { opacity: 0; transform: translateY(20px) scale(0.8); }
+  80% { opacity: 1; transform: translateY(-5px) scale(1.05); } /* Overshoot */
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes tag-pulse-glow {
+  50% { 
+    box-shadow: 0 0 25px rgba(236, 72, 153, 1), 0 0 10px rgba(236, 72, 153, 0.8) inset; 
+    border-color: rgb(244 114 182);
+    text-shadow: 0 0 8px rgba(244, 114, 182, 0.8);
+  }
+}
+
+@keyframes tag-pulse-glow-cyan {
+  50% { 
+    box-shadow: 0 0 25px rgba(34, 211, 238, 1), 0 0 10px rgba(34, 211, 238, 0.8) inset; 
+    border-color: rgb(103 232 249);
+    text-shadow: 0 0 8px rgba(103, 232, 249, 0.8);
+  }
+}
+
+@keyframes tag-pulse-glow-green {
+    50% { 
+      box-shadow: 0 0 25px rgba(74, 222, 128, 1), 0 0 10px rgba(74, 222, 128, 0.8) inset; 
+      border-color: rgb(134 239 172);
+      text-shadow: 0 0 8px rgba(134, 239, 172, 0.8);
+    }
+}
+
+/* === Verified Info Text Animation === */
+.animate-name-position {
+  opacity: 0;
+  animation: fade-in-up 0.6s ease-out forwards 2.2s; /* 1st */
+}
+
+.animate-risk-level {
+  opacity: 0;
+  animation: fade-in-up 0.6s ease-out forwards 3.4s; /* 3rd */
+}
+
+.animate-proceed-button {
+  opacity: 0;
+  animation: fade-in-up 0.6s ease-out forwards 4.0s; /* 4th */
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === PEP Detected Tag Animation === */
+.animate-pep-tag {
+    opacity: 0;
+    animation: fade-in-out-pulse 4s infinite ease-in-out 2.8s; /* 2nd - Start after name/position */
+}
+
+@keyframes fade-in-out-pulse {
+    0%, 100% {
+        opacity: 0;
+        transform: scale(0.95) translateX(-50%);
+        box-shadow: none;
+        text-shadow: none;
+    }
+    25%, 75% {
+        opacity: 1;
+        transform: scale(1) translateX(-50%);
+        box-shadow: 0 0 25px rgba(250, 204, 21, 0.8), 0 0 10px rgba(250, 204, 21, 0.6) inset;
+        border-color: rgb(252 211 77);
+        text-shadow: 0 0 8px rgba(252, 211, 77, 0.7);
+    }
+}
+
+/* === Onboarded / Welcome Animation === */
+.animate-onboard-glow {
+    animation: 
+        onboard-glow 2s ease-in-out infinite alternate,
+        fade-in-scale-up 0.5s ease-out forwards;
+    opacity: 0;
+}
+
+@keyframes onboard-glow {
+    from {
+        text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #0ff, 0 0 40px #0ff;
+    }
+    to {
+        text-shadow: 0 0 20px #fff, 0 0 30px #4df, 0 0 40px #4df, 0 0 50px #4df, 0 0 60px #4df;
+    }
+}
+
+@keyframes fade-in-scale-up {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.welcome-text-container {
+    animation: fade-in-up 1s ease-out forwards;
+}

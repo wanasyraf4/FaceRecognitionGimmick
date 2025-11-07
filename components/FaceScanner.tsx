@@ -159,7 +159,7 @@ const FaceScanner: React.FC = () => {
     if (status === ScannerStatus.SCAN_PASSED) {
         const timer = setTimeout(() => {
             setStatus(ScannerStatus.FINALIZING);
-        }, 10000); // Auto-proceed after 10 seconds
+        }, 23000); // Auto-proceed after 23 seconds
         return () => clearTimeout(timer);
     }
 
@@ -276,6 +276,13 @@ const FaceScanner: React.FC = () => {
               ) : (
                 <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover transform scale-x-[-1]" />
               )}
+              
+              {/* Risk High Overlay */}
+              {status === ScannerStatus.SCAN_PASSED && (
+                <div className="risk-high-overlay">
+                  RISK SCORING: HIGH
+                </div>
+              )}
 
               {status === ScannerStatus.DETECTING && (
                 <div className="absolute inset-0 bg-black/30">
@@ -342,7 +349,7 @@ const FaceScanner: React.FC = () => {
                 {/* 🟢 eKYC Tag (Right) */}
                 <div className="absolute top-3/5 -translate-y-1/2 left-full flex items-center pointer-events-none animate-ekyc-tag">
                     <div className="connecting-line border-t-2 border-green-500"></div>
-                    <div className="ml-3 relative flex flex-col items-center">
+                    <div className="ml-2 relative flex flex-col items-center">
                         <EkycIcon className="tag-icon w-16 h-16 mb-2 text-green-400" />
                         <div className="tag-box px-3 py-1 flex items-center justify-center border border-green-500 text-green-400 font-bold rounded-md text-xl bg-black/70 backdrop-blur-md shadow-[0_0_12px_rgba(74,222,128,0.7)]">
                            <span>eKYC</span>
@@ -438,13 +445,13 @@ const FaceScanner: React.FC = () => {
       <div className="w-full aspect-square flex items-center justify-center">{renderContent()}</div>
       
       {status === ScannerStatus.SCAN_PASSED && (
-        <div className="text-center mt-4">
-            <div className="animate-name-position">
-              <p className="text-4xl font-bold text-slate-100">Name: Affendi Rashdi</p>
-              <p className="text-4xl text-cyan-400">Position: DG LFSA</p>
+        <div className="text-center mt-3">
+            <div className="risk-high-text">
+              RISK SCORING: HIGH
             </div>
-            <div className="animate-risk-level">
-              <p className="text-4xl font-bold text-red-500">Risk: High</p>
+            <div className="animate-name-position">
+              <p className="text-2xl font-bold text-slate-100">Name: AFFENDI RASHDI</p>
+              <p className="text-2xl text-cyan-400">Position: DIRECTOR GENERAL LABUAN FSA</p>
             </div>
           </div>
       )}

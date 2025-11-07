@@ -25,6 +25,8 @@ const SCANNING_TEXTS = [
   'Decompressing Biometric Hash...',
 ];
 
+const fullFsaText = "Labuan Financial Services Authority (Labuan FSA) was established on 15 February 1996 under the Labuan Financial Services Authority Act 1996, governed by the Ministry of Finance (MOF), Malaysia. Labuan FSA is the statutory body responsible for the development and administration of the Labuan International Business and Financial Centre (Labuan IBFC).";
+
 const FaceScanner: React.FC = () => {
   const [status, setStatus] = useState<ScannerStatus>(ScannerStatus.IDLE);
   const [snapshot, setSnapshot] = useState<string | null>(null);
@@ -32,6 +34,9 @@ const FaceScanner: React.FC = () => {
   const [scanningMessage, setScanningMessage] = useState<string>(SCANNING_TEXTS[0]);
   const [detectionBox, setDetectionBox] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const [countdown, setCountdown] = useState(5);
+  const [showFsaPopup, setShowFsaPopup] = useState(false);
+  const [displayedFsaText, setDisplayedFsaText] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -48,6 +53,7 @@ const FaceScanner: React.FC = () => {
     setSnapshot(null);
     setErrorMessage(null);
     setDetectionBox(null);
+    setShowFsaPopup(false);
     setStatus(ScannerStatus.IDLE);
   }, []);
 
@@ -157,10 +163,25 @@ const FaceScanner: React.FC = () => {
     }
     
     if (status === ScannerStatus.SCAN_PASSED) {
+        // Timer to show the popup after the risk animation
+        const showPopupTimer = setTimeout(() => {
+            setShowFsaPopup(true);
+        }, 15600); // 13.6s (animation delay) + 2s (animation duration)
+
+        // Timer to hide the popup after 11 seconds
+        const hidePopupTimer = setTimeout(() => {
+            setShowFsaPopup(false);
+        }, 15600 + 11000); // Show for 11 seconds
+
         const timer = setTimeout(() => {
             setStatus(ScannerStatus.FINALIZING);
-        }, 23000); // Auto-proceed after 23 seconds
-        return () => clearTimeout(timer);
+        }, 29000); // Auto-proceed after popup sequence
+        
+        return () => {
+            clearTimeout(showPopupTimer);
+            clearTimeout(hidePopupTimer);
+            clearTimeout(timer);
+        };
     }
 
     if (status === ScannerStatus.FINALIZING) {
@@ -197,12 +218,35 @@ const FaceScanner: React.FC = () => {
     }
   }, [status, stopCamera, captureSnapshot, countdown, handleReset]);
 
+  useEffect(() => {
+    if (showFsaPopup) {
+      setIsTyping(true);
+      let index = 0;
+      const intervalId = setInterval(() => {
+        setDisplayedFsaText(fullFsaText.substring(0, index));
+        index++;
+        if (index > fullFsaText.length) {
+          clearInterval(intervalId);
+          setIsTyping(false);
+        }
+      }, 15); // Typing speed in ms
+
+      return () => {
+        clearInterval(intervalId);
+        setIsTyping(false);
+        setDisplayedFsaText('');
+      };
+    }
+  }, [showFsaPopup]);
+
+
   useEffect(() => () => stopCamera(), [stopCamera]);
 
   const handleStart = () => {
     setSnapshot(null);
     setErrorMessage(null);
     setDetectionBox(null);
+    setShowFsaPopup(false);
     setStatus(ScannerStatus.INITIALIZING);
   };
 
@@ -375,92 +419,115 @@ const FaceScanner: React.FC = () => {
     }
   };
 
-  if (
-    status === ScannerStatus.FINALIZING ||
-    status === ScannerStatus.COUNTDOWN ||
-    status === ScannerStatus.ONBOARDED ||
-    status === ScannerStatus.WELCOME
-  ) {
-      return (
-          <div className="w-full p-4 bg-slate-800/20 border border-cyan-500/20 rounded-lg backdrop-blur-md">
-              <div className="w-full aspect-square flex items-center justify-center">
-                  {status === ScannerStatus.FINALIZING && (
-                      <div className="flex flex-col items-center justify-center text-center animate-pulse">
-                          <p className="text-2xl text-cyan-300">Finalizing Session...</p>
-                          <p className="text-lg text-cyan-500">Please wait.</p>
+  const renderMainContent = () => {
+    if (
+      status === ScannerStatus.FINALIZING ||
+      status === ScannerStatus.COUNTDOWN ||
+      status === ScannerStatus.ONBOARDED ||
+      status === ScannerStatus.WELCOME
+    ) {
+        return (
+            <div className="w-full p-4 bg-slate-800/20 border border-cyan-500/20 rounded-lg backdrop-blur-md">
+                <div className="w-full aspect-square flex items-center justify-center">
+                    {status === ScannerStatus.FINALIZING && (
+                        <div className="flex flex-col items-center justify-center text-center animate-pulse">
+                            <p className="text-2xl text-cyan-300">Finalizing Session...</p>
+                            <p className="text-lg text-cyan-500">Please wait.</p>
+                        </div>
+                    )}
+                    {status === ScannerStatus.COUNTDOWN && (
+                        <div className="flex flex-col items-center justify-center text-center">
+                            <p className="text-2xl text-cyan-300 mb-4">System Processing</p>
+                            <div className="text-9xl font-bold text-cyan-400 animate-pulse" style={{textShadow: '0 0 15px rgba(0,255,255,0.7)'}}>
+                                {countdown}
+                            </div>
+                        </div>
+                    )}
+                    {status === ScannerStatus.ONBOARDED && (
+                      <div className="text-center">
+                          <h2 className="text-7xl md:text-8xl font-bold text-cyan-300 animate-onboard-glow">ONBOARDED!</h2>
                       </div>
-                  )}
-                  {status === ScannerStatus.COUNTDOWN && (
-                      <div className="flex flex-col items-center justify-center text-center">
-                          <p className="text-2xl text-cyan-300 mb-4">System Processing</p>
-                          <div className="text-9xl font-bold text-cyan-400 animate-pulse" style={{textShadow: '0 0 15px rgba(0,255,255,0.7)'}}>
-                              {countdown}
-                          </div>
-                      </div>
-                  )}
-                  {status === ScannerStatus.ONBOARDED && (
-                    <div className="text-center">
-                        <h2 className="text-7xl md:text-8xl font-bold text-cyan-300 animate-onboard-glow">Onboarded!!!</h2>
-                    </div>
-                  )}
-                  {status === ScannerStatus.WELCOME && (
-                      <div className="flex flex-col items-center justify-center text-center">
-                          <div className="welcome-text-container">
-                              <p className="text-xl md:text-2xl font-semibold text-slate-300 mb-4">WELCOME TO</p>
-                              <h2 className="text-2xl md:text-3xl font-bold text-cyan-300 leading-tight">
-                                  INTERNATIONAL CONFERENCE 
-                                  <br/>
-                                  ON 
-                                  <br/>
-                                  FINANCIAL CRIME 
-                                  <br/>
-                                  AND 
-                                  <br/>
-                                  COUNTER TERRORISM FINANCING 
-                                  <br/>
-                                  2025
-                              </h2>
-                          </div>
-                          <div className="mt-12 animate-proceed-button-welcome">
-                              <button
-                                  onClick={handleReset}
-                                  className="px-8 py-3 bg-cyan-500 text-slate-900 font-bold uppercase tracking-widest rounded-md hover:bg-cyan-400 transition-all duration-300 shadow-[0_0_15px_rgba(0,255,255,0.4)] hover:shadow-[0_0_25px_rgba(0,255,255,0.7)]"
-                              >
-                                  Proceed
-                              </button>
-                          </div>
-                      </div>
-                  )}
+                    )}
+                    {status === ScannerStatus.WELCOME && (
+                        <div className="flex flex-col items-center justify-center text-center">
+                            <div className="welcome-text-container">
+                                <p className="text-xl md:text-2xl font-semibold text-slate-300 mb-4">WELCOME TO</p>
+                                <h2 className="text-2xl md:text-3xl font-bold text-cyan-300 leading-tight">
+                                    INTERNATIONAL CONFERENCE 
+                                    <br/>
+                                    ON 
+                                    <br/>
+                                    FINANCIAL CRIME 
+                                    <br/>
+                                    AND 
+                                    <br/>
+                                    COUNTER TERRORISM FINANCING 
+                                    <br/>
+                                    2025
+                                </h2>
+                            </div>
+                            <div className="mt-12 animate-proceed-button-welcome">
+                                <button
+                                    onClick={handleReset}
+                                    className="px-8 py-3 bg-cyan-500 text-slate-900 font-bold uppercase tracking-widest rounded-md hover:bg-cyan-400 transition-all duration-300 shadow-[0_0_15px_rgba(0,255,255,0.4)] hover:shadow-[0_0_25px_rgba(0,255,255,0.7)]"
+                                >
+                                    Proceed
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+                <div className="h-12 flex items-center justify-center text-center px-4 py-2 mt-4 border-t border-cyan-500/20">
+                    <p className="text-lg font-medium tracking-wider uppercase">{STATUS_MESSAGES[status]}</p>
+                </div>
+                <canvas ref={canvasRef} className="hidden"></canvas>
+            </div>
+        );
+    }
+  
+    return (
+      <div className="w-full p-4 bg-slate-800/20 border border-cyan-500/20 rounded-lg backdrop-blur-md">
+        <div className="w-full aspect-square flex items-center justify-center">{renderContent()}</div>
+        
+        {status === ScannerStatus.SCAN_PASSED && (
+          <div className="text-center mt-3">
+              <div className="risk-high-text">
+                RISK SCORING: HIGH
               </div>
-              <div className="h-12 flex items-center justify-center text-center px-4 py-2 mt-4 border-t border-cyan-500/20">
-                  <p className="text-lg font-medium tracking-wider uppercase">{STATUS_MESSAGES[status]}</p>
+              <div className="animate-name-position">
+                <p className="text-2xl font-bold text-slate-100">Name: AFFENDI RASHDI</p>
+                <p className="text-2xl text-cyan-400">Position: DIRECTOR GENERAL LABUAN FSA</p>
               </div>
-              <canvas ref={canvasRef} className="hidden"></canvas>
-          </div>
-      );
+            </div>
+        )}
+  
+        <div className="h-12 flex items-center justify-center text-center px-4 py-2 mt-4 border-t border-cyan-500/20">
+          <p className="text-lg font-medium tracking-wider uppercase">{STATUS_MESSAGES[status]}</p>
+        </div>
+        <canvas ref={canvasRef} className="hidden"></canvas>
+      </div>
+    );
   }
 
   return (
-    <div className="w-full p-4 bg-slate-800/20 border border-cyan-500/20 rounded-lg backdrop-blur-md">
-      <div className="w-full aspect-square flex items-center justify-center">{renderContent()}</div>
-      
-      {status === ScannerStatus.SCAN_PASSED && (
-        <div className="text-center mt-3">
-            <div className="risk-high-text">
-              RISK SCORING: HIGH
-            </div>
-            <div className="animate-name-position">
-              <p className="text-2xl font-bold text-slate-100">Name: AFFENDI RASHDI</p>
-              <p className="text-2xl text-cyan-400">Position: DIRECTOR GENERAL LABUAN FSA</p>
-            </div>
+    <>
+      {renderMainContent()}
+      {showFsaPopup && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+          <div className="bg-slate-800 border border-cyan-500/50 rounded-lg shadow-[0_0_20px_rgba(0,255,255,0.5)] max-w-3xl w-full mx-4 p-8 flex flex-col md:flex-row items-center gap-8 animate-slide-in-up">
+            <img
+              src="https://i.ibb.co/fYtzyJw6/logo.png"
+              alt="Labuan FSA Logo"
+              className="w-32 h-32 md:w-48 md:h-48 object-contain flex-shrink-0"
+            />
+            <p className="text-slate-300 text-base md:text-lg text-center md:text-left min-h-40 md:min-h-0">
+              {displayedFsaText}
+              {isTyping && <span className="typing-cursor"></span>}
+            </p>
           </div>
+        </div>
       )}
-
-      <div className="h-12 flex items-center justify-center text-center px-4 py-2 mt-4 border-t border-cyan-500/20">
-        <p className="text-lg font-medium tracking-wider uppercase">{STATUS_MESSAGES[status]}</p>
-      </div>
-      <canvas ref={canvasRef} className="hidden"></canvas>
-    </div>
+    </>
   );
 };
 

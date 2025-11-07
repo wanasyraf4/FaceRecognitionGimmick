@@ -310,6 +310,48 @@
   }
 }
 
+/* === FSA Popup Overlay Animation === */
+.animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+}
+
+.animate-slide-in-up {
+    animation: slide-in-up 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slide-in-up {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* === FSA Popup Typing Animation === */
+.typing-cursor {
+  display: inline-block;
+  background-color: #67e8f9; /* cyan-300 */
+  width: 2px;
+  height: 1.2em;
+  animation: blink 0.75s step-end infinite;
+  margin-left: 2px;
+  transform: translateY(0.15em);
+}
+
+@keyframes blink {
+  from, to { background-color: transparent; }
+  50% { background-color: #67e8f9; }
+}
+
+
 /* === Onboarded / Welcome Animation === */
 .animate-onboard-glow {
     animation: 

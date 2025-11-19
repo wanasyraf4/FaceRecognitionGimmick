@@ -1,10 +1,10 @@
 import React from 'react';
 
-interface IconProps {
+interface IconProps extends React.SVGProps<SVGSVGElement> {
   className?: string;
 }
 
-export const ScanIcon: React.FC<IconProps> = ({ className }) => (
+export const ScanIcon: React.FC<IconProps> = ({ className, ...props }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     className={className}
@@ -12,6 +12,7 @@ export const ScanIcon: React.FC<IconProps> = ({ className }) => (
     viewBox="0 0 24 24"
     stroke="currentColor"
     strokeWidth={2}
+    {...props}
   >
     <path
       strokeLinecap="round"
@@ -26,7 +27,7 @@ export const ScanIcon: React.FC<IconProps> = ({ className }) => (
   </svg>
 );
 
-export const CheckIcon: React.FC<IconProps> = ({ className }) => (
+export const CheckIcon: React.FC<IconProps> = ({ className, ...props }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     className={className}
@@ -34,78 +35,116 @@ export const CheckIcon: React.FC<IconProps> = ({ className }) => (
     viewBox="0 0 24 24"
     stroke="currentColor"
     strokeWidth={2}
+    {...props}
   >
     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
   </svg>
 );
 
-export const ErrorIcon: React.FC<IconProps> = ({ className }) => (
+export const ErrorIcon: React.FC<IconProps> = ({ className, ...props }) => (
     <svg 
         xmlns="http://www.w3.org/2000/svg" 
         className={className}
         fill="none" 
         viewBox="0 0 24 24" 
         stroke="currentColor" 
-        strokeWidth={2}>
+        strokeWidth={2}
+        {...props}
+    >
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
 );
 
-export const FaceMeshIcon: React.FC<IconProps> = ({ className }) => (
+export const FaceMeshIcon: React.FC<IconProps> = ({ className, ...props }) => {
+  // Dynamic nodes for the face mesh
+  const nodes = [
+    { x: 50, y: 5 },   // 0: Top
+    { x: 25, y: 20 },  // 1: Forehead L
+    { x: 75, y: 20 },  // 2: Forehead R
+    { x: 10, y: 40 },  // 3: Temple L
+    { x: 90, y: 40 },  // 4: Temple R
+    { x: 35, y: 40 },  // 5: Eye L Top
+    { x: 65, y: 40 },  // 6: Eye R Top
+    { x: 35, y: 48 },  // 7: Eye L Bot
+    { x: 65, y: 48 },  // 8: Eye R Bot
+    { x: 50, y: 35 },  // 9: Nose Bridge Top
+    { x: 50, y: 55 },  // 10: Nose Tip
+    { x: 20, y: 60 },  // 11: Cheek L
+    { x: 80, y: 60 },  // 12: Cheek R
+    { x: 35, y: 75 },  // 13: Jaw L
+    { x: 65, y: 75 },  // 14: Jaw R
+    { x: 50, y: 90 },  // 15: Chin
+  ];
+
+  // Connectivity map
+  const connections = [
+    [0, 1], [0, 2], [1, 2], // Top
+    [1, 3], [2, 4], // Temples
+    [1, 5], [2, 6], // Forehead to eyes
+    [9, 5], [9, 6], [9, 1], [9, 2], // Nose bridge connections
+    [3, 11], [4, 12], // Outer face
+    [5, 7], [6, 8], // Eyes vertical
+    [3, 5], [4, 6], // Temple to eye
+    [11, 7], [12, 8], // Cheek to eye bottom
+    [10, 7], [10, 8], // Nose tip to eyes
+    [10, 11], [10, 12], // Nose to cheeks
+    [10, 13], [10, 14], // Nose to jaw
+    [11, 13], [12, 14], // Cheek to jaw
+    [13, 15], [14, 15], // Jaw to chin
+    [10, 15] // Nose to chin line
+  ];
+
+  return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       className={className}
       viewBox="0 0 100 100"
       preserveAspectRatio="xMidYMid meet"
+      {...props}
     >
-      <g className="face-mesh-group" fill="none" stroke="currentColor" strokeWidth="0.4" strokeLinejoin='round'>
-        {/* Main structure polygons */}
-        <polygon className="face-mesh-poly" points="50,10 30,30 70,30" />
-        <polygon className="face-mesh-poly" points="30,30 15,50 50,50" />
-        <polygon className="face-mesh-poly" points="70,30 85,50 50,50" />
-        <polygon className="face-mesh-poly" points="15,50 30,80 50,70" />
-        <polygon className="face-mesh-poly" points="85,50 70,80 50,70" />
-        <polygon className="face-mesh-poly" points="30,80 50,90 50,70" />
-        <polygon className="face-mesh-poly" points="70,80 50,90 50,70" />
-        
-        {/* Eye sockets */}
-        <polygon className="face-mesh-poly" points="30,30 50,50 35,45" />
-        <polygon className="face-mesh-poly" points="70,30 50,50 65,45" />
-
-        {/* Nose */}
-        <polygon className="face-mesh-poly" points="50,50 45,60 55,60" />
-        <polygon className="face-mesh-poly" points="50,70 45,60 55,60" />
-
-        {/* Cheekbones */}
-        <polygon className="face-mesh-poly" points="15,50 35,45 30,80" />
-        <polygon className="face-mesh-poly" points="85,50 65,45 70,80" />
-        <polygon className="face-mesh-poly" points="35,45 50,50 50,70" />
-        <polygon className="face-mesh-poly" points="65,45 50,50 50,70" />
-        <polygon className="face-mesh-poly" points="35,45 50,70 30,80" />
-        <polygon className="face-mesh-poly" points="65,45 50,70 70,80" />
-
-
-        <g fill="currentColor" stroke="none">
-          <circle className="face-mesh-dot" cx="50" cy="10" r="1"/>
-          <circle className="face-mesh-dot" cx="30" cy="30" r="1"/>
-          <circle className="face-mesh-dot" cx="70" cy="30" r="1"/>
-          <circle className="face-mesh-dot" cx="15" cy="50" r="1"/>
-          <circle className="face-mesh-dot" cx="85" cy="50" r="1"/>
-          <circle className="face-mesh-dot" cx="35" cy="45" r="1"/>
-          <circle className="face-mesh-dot" cx="65" cy="45" r="1"/>
-          <circle className="face-mesh-dot" cx="50" cy="50" r="1"/>
-          <circle className="face-mesh-dot" cx="45" cy="60" r="1"/>
-          <circle className="face-mesh-dot" cx="55" cy="60" r="1"/>
-          <circle className="face-mesh-dot" cx="50" cy="70" r="1"/>
-          <circle className="face-mesh-dot" cx="30" cy="80" r="1"/>
-          <circle className="face-mesh-dot" cx="70" cy="80" r="1"/>
-          <circle className="face-mesh-dot" cx="50" cy="90" r="1"/>
-        </g>
+      <defs>
+        <filter id="glow-filter" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="1" result="blur" />
+          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+      </defs>
+      <g className="face-mesh-group" filter="url(#glow-filter)">
+        {connections.map((pair, i) => {
+            const p1 = nodes[pair[0]];
+            const p2 = nodes[pair[1]];
+            return (
+                <line 
+                    key={`l-${i}`}
+                    x1={p1.x} y1={p1.y}
+                    x2={p2.x} y2={p2.y}
+                    className="face-mesh-line"
+                    style={{ 
+                        animationDelay: `${i * 0.04}s` 
+                    } as React.CSSProperties}
+                />
+            );
+        })}
+        {nodes.map((node, i) => (
+            <g key={`n-${i}`} className="face-mesh-node-group" style={{ animationDelay: `${i * 0.04 + 0.1}s` }}>
+                <circle 
+                    cx={node.x} cy={node.y} r="1.5"
+                    className="face-mesh-node"
+                />
+                {/* Add pulsing markers to specific nodes for effect */}
+                {[0, 9, 10, 15, 3, 4].includes(i) && (
+                    <circle 
+                        cx={node.x} cy={node.y} r="3"
+                        className="face-mesh-node-pulse"
+                    />
+                )}
+            </g>
+        ))}
       </g>
     </svg>
-);
+  );
+};
 
-export const AmlPassedIcon: React.FC<IconProps> = ({ className }) => (
+export const AmlPassedIcon: React.FC<IconProps> = ({ className, ...props }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     className={className}
@@ -113,6 +152,7 @@ export const AmlPassedIcon: React.FC<IconProps> = ({ className }) => (
     viewBox="0 0 24 24"
     stroke="currentColor"
     strokeWidth={1.5}
+    {...props}
   >
     <path
       className="aml-icon-shield"
@@ -129,7 +169,7 @@ export const AmlPassedIcon: React.FC<IconProps> = ({ className }) => (
   </svg>
 );
 
-export const WorldCheckIcon: React.FC<IconProps> = ({ className }) => (
+export const WorldCheckIcon: React.FC<IconProps> = ({ className, ...props }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     className={className}
@@ -137,6 +177,7 @@ export const WorldCheckIcon: React.FC<IconProps> = ({ className }) => (
     viewBox="0 0 24 24"
     stroke="currentColor"
     strokeWidth={1.5}
+    {...props}
   >
     <path
       className="world-check-icon-globe"
@@ -153,7 +194,7 @@ export const WorldCheckIcon: React.FC<IconProps> = ({ className }) => (
   </svg>
 );
 
-export const EkycIcon: React.FC<IconProps> = ({ className }) => (
+export const EkycIcon: React.FC<IconProps> = ({ className, ...props }) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       className={className}
@@ -161,6 +202,7 @@ export const EkycIcon: React.FC<IconProps> = ({ className }) => (
       viewBox="0 0 24 24"
       stroke="currentColor"
       strokeWidth={1.5}
+      {...props}
     >
       <path
         className="ekyc-icon-card"

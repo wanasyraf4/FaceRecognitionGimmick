@@ -1,3 +1,4 @@
+
 /* === Particle Canvas Background === */
 #particle-canvas {
   position: absolute;
@@ -8,60 +9,123 @@
   z-index: 0;
 }
 
-/* === FaceMesh Glow Animation === */
-.face-mesh-group {
-    animation: neural-shift 5s infinite linear alternate;
+/* === Scanning Effects === */
+.filter-scanning {
+  filter: sepia(0.5) hue-rotate(170deg) contrast(1.2) brightness(1.1) saturate(0.8);
 }
 
-.face-mesh-poly { /* Renamed from face-mesh-path */
-  stroke: rgba(0, 255, 255, 0.9);
+@keyframes scan-beam {
+  0% { top: 0%; opacity: 0; }
+  10% { opacity: 1; box-shadow: 0 0 40px cyan; }
+  90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.animate-scan-beam {
+  animation: scan-beam 2s ease-in-out infinite;
+}
+
+@keyframes scan-beam-vertical {
+  0% { left: 0%; opacity: 0; }
+  10% { opacity: 1; box-shadow: 0 0 40px cyan; }
+  90% { opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
+
+.animate-scan-beam-vertical {
+  animation: scan-beam-vertical 3s ease-in-out infinite; /* Different speed for variety */
+}
+
+@keyframes scan-down {
+    from { background-position: 0 0; }
+    to { background-position: 0 100%; }
+}
+
+.animate-scan-down {
+    animation: scan-down 1s linear infinite;
+}
+
+@keyframes spin-right {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spin-left {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+.animate-spin-slow-right {
+  animation: spin-right 8s linear infinite;
+}
+
+.animate-spin-slow-left {
+  animation: spin-left 5s linear infinite;
+}
+
+/* === NEW Face Mesh Animations === */
+
+/* 3D Container Movement */
+.animate-face-3d-scan {
+    transform-origin: 50% 50%;
+    animation: face-3d-scan-move 5s ease-in-out infinite alternate;
+}
+
+@keyframes face-3d-scan-move {
+    0% { transform: perspective(600px) rotateY(-20deg) rotateX(5deg) scale(0.95); }
+    50% { transform: perspective(600px) rotateY(0deg) rotateX(0deg) scale(1); }
+    100% { transform: perspective(600px) rotateY(20deg) rotateX(-5deg) scale(0.95); }
+}
+
+/* Line Drawing & Pulsing */
+.face-mesh-line {
+  stroke: rgba(0, 255, 255, 0.7);
+  stroke-width: 0.5;
   stroke-dasharray: 150;
   stroke-dashoffset: 150;
-  animation:
-    draw-mesh 2s ease-in-out forwards,
-    glow-mesh 3s infinite ease-in-out alternate;
-  filter: drop-shadow(0 0 4px rgba(0, 255, 255, 0.8));
-}
-
-.face-mesh-dot {
-  fill: rgba(0, 255, 255, 0.9);
   animation: 
-    pulse-dot 2s ease-in-out infinite alternate,
-    fade-in-dots 0.5s ease-in forwards 2.5s;
-  filter: drop-shadow(0 0 6px rgba(0, 255, 255, 0.7));
-  opacity: 0;
+    draw-line-grow 0.8s ease-out forwards,
+    pulse-line-opacity 3s infinite ease-in-out;
 }
 
-@keyframes draw-mesh {
+@keyframes draw-line-grow {
   to { stroke-dashoffset: 0; }
 }
 
-@keyframes fade-in-dots {
-    to { opacity: 1; }
+@keyframes pulse-line-opacity {
+  0%, 100% { stroke-opacity: 0.3; stroke: rgba(0,255,255,0.3); stroke-width: 0.5; }
+  50% { stroke-opacity: 1; stroke: rgba(200,255,255,0.9); stroke-width: 0.8; filter: drop-shadow(0 0 2px cyan); }
 }
 
-@keyframes glow-mesh {
-  0% { opacity: 0.5; filter: drop-shadow(0 0 4px rgba(0,255,255,0.4)); }
-  100% { opacity: 1; filter: drop-shadow(0 0 8px rgba(0,255,255,1)); }
+/* Nodes Pop-in & Pulse */
+.face-mesh-node-group {
+    opacity: 0;
+    animation: node-pop-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
-@keyframes pulse-dot {
-  0% { r: 0.8; opacity: 0.6; }
-  100% { r: 1.5; opacity: 1; }
+.face-mesh-node {
+    fill: #0ff;
+    filter: drop-shadow(0 0 4px rgba(0, 255, 255, 0.8));
 }
 
-@keyframes neural-shift {
-  0% { transform: translate(0.3px, 0.5px) rotate(0.05deg); }
-  10% { transform: translate(-0.2px, -0.3px) rotate(-0.02deg); }
-  20% { transform: translate(0.4px, 0.1px) rotate(0.03deg); }
-  30% { transform: translate(-0.5px, 0.3px) rotate(-0.05deg); }
-  40% { transform: translate(0.1px, -0.4px) rotate(0.01deg); }
-  50% { transform: translate(-0.3px, 0.2px) rotate(-0.04deg); }
-  60% { transform: translate(0.5px, -0.1px) rotate(0.02deg); }
-  70% { transform: translate(-0.1px, 0.4px) rotate(-0.03deg); }
-  80% { transform: translate(0.2px, -0.5px) rotate(0.04deg); }
-  90% { transform: translate(-0.4px, 0.1px) rotate(-0.01deg); }
-  100% { transform: translate(0.3px, 0.5px) rotate(0.05deg); }
+.face-mesh-node-pulse {
+    fill: none;
+    stroke: #0ff;
+    stroke-width: 0.5;
+    opacity: 0;
+    animation: node-pulse-ring 2s infinite;
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+@keyframes node-pop-in {
+    from { opacity: 0; transform: scale(0); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes node-pulse-ring {
+    0% { transform: scale(1); opacity: 0.8; stroke-width: 1; }
+    100% { transform: scale(4); opacity: 0; stroke-width: 0; }
 }
 
 /* === AML Tag Animation === */
@@ -387,4 +451,19 @@
 .animate-proceed-button-welcome {
     opacity: 0;
     animation: fade-in-up 0.6s ease-out forwards 1.2s;
+}
+
+/* Utilities for flicker text */
+.flicker-text {
+    animation: flicker-text-anim 3s infinite;
+}
+
+@keyframes flicker-text-anim {
+    0%, 100% { opacity: 1; }
+    41.99% { opacity: 1; }
+    42% { opacity: 0.6; }
+    43% { opacity: 1; }
+    95% { opacity: 1; }
+    96% { opacity: 0.8; }
+    97% { opacity: 1; }
 }

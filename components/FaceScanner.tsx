@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ScannerStatus } from '../types';
 import { CheckIcon, ErrorIcon, FaceMeshIcon, AmlPassedIcon, WorldCheckIcon, EkycIcon } from './Icons';
@@ -14,6 +13,7 @@ const STATUS_MESSAGES: { [key in ScannerStatus]: string } = {
   [ScannerStatus.ERROR]: 'Access Denied. System Error.',
   [ScannerStatus.FINALIZING]: 'Finalizing Session...',
   [ScannerStatus.COUNTDOWN]: 'System Resetting...',
+  [ScannerStatus.APPROVAL_CHECKS]: 'Verifying Compliance Status...',
   [ScannerStatus.ONBOARDED]: 'Onboarding Complete',
   [ScannerStatus.WELCOME]: 'Welcome Aboard',
 };
@@ -182,7 +182,7 @@ const FaceScanner: React.FC = () => {
 
           // Brief pause to show "Locked" state before capture
           setTimeout(() => captureSnapshot(), 1200); // Extended lock time slightly
-        }, 2000); 
+        }, 6000); 
       };
 
       detectFace();
@@ -205,7 +205,7 @@ const FaceScanner: React.FC = () => {
       const textInterval = setInterval(() => {
         textIndex = (textIndex + 1) % SCANNING_TEXTS.length;
         setScanningMessage(SCANNING_TEXTS[textIndex]);
-      }, 800); // Slower text change for readability over 10s
+      }, 600); // Slightly faster to see more text in 6s
 
       // Confidence counter
       const confidenceInterval = setInterval(() => {
@@ -213,12 +213,12 @@ const FaceScanner: React.FC = () => {
             if (prev >= 99) return 99;
             return prev + 1;
         });
-      }, 100); // 100ms * 100 steps = 10s roughly
+      }, 210); // 80ms * 100 steps = 8s roughly
 
       const timer = setTimeout(() => {
           setMatchConfidence(100);
           setStatus(ScannerStatus.SCAN_PASSED);
-      }, 10000); // Increased scan time to 10 seconds
+      }, 21000); // Changed scan time to 8 seconds
       
       return () => {
         clearTimeout(timer);
@@ -262,8 +262,17 @@ const FaceScanner: React.FC = () => {
         const timer = setTimeout(() => setCountdown(c => c - 1), 1000);
         return () => clearTimeout(timer);
       } else {
-        setStatus(ScannerStatus.ONBOARDED);
+        // Instead of going straight to ONBOARDED, go to APPROVAL_CHECKS
+        setStatus(ScannerStatus.APPROVAL_CHECKS);
       }
+    }
+
+    if (status === ScannerStatus.APPROVAL_CHECKS) {
+      // Allow time for typing animations to play (approx 3.5 seconds)
+      const timer = setTimeout(() => {
+          setStatus(ScannerStatus.ONBOARDED);
+      }, 3500);
+      return () => clearTimeout(timer);
     }
     
     if (status === ScannerStatus.ONBOARDED) {
@@ -392,13 +401,6 @@ const FaceScanner: React.FC = () => {
                 <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover transform scale-x-[-1]" />
               )}
               
-              {/* Risk High Overlay */}
-              {status === ScannerStatus.SCAN_PASSED && (
-                <div className="risk-high-overlay">
-                  RISK SCORING: HIGH
-                </div>
-              )}
-
               {/* Detection Box Animation (Pre-Capture) */}
               {status === ScannerStatus.DETECTING && (
                 <div className="absolute inset-0 bg-black/10">
@@ -594,6 +596,7 @@ const FaceScanner: React.FC = () => {
     if (
       status === ScannerStatus.FINALIZING ||
       status === ScannerStatus.COUNTDOWN ||
+      status === ScannerStatus.APPROVAL_CHECKS ||
       status === ScannerStatus.ONBOARDED ||
       status === ScannerStatus.WELCOME
     ) {
@@ -614,39 +617,78 @@ const FaceScanner: React.FC = () => {
                             </div>
                         </div>
                     )}
-                    {status === ScannerStatus.ONBOARDED && (
-                      <div className="text-center">
-                          <h2 className="text-7xl md:text-8xl font-bold text-cyan-300 animate-onboard-glow">ONBOARDED!</h2>
-                      </div>
-                    )}
-                    {status === ScannerStatus.WELCOME && (
-                        <div className="flex flex-col items-center justify-center text-center">
-                            <div className="welcome-text-container">
-                                <p className="text-xl md:text-2xl font-semibold text-slate-300 mb-4">WELCOME TO</p>
-                                <h2 className="text-2xl md:text-3xl font-bold text-cyan-300 leading-tight">
-                                    INTERNATIONAL CONFERENCE 
-                                    <br/>
-                                    ON 
-                                    <br/>
-                                    FINANCIAL CRIME 
-                                    <br/>
-                                    AND 
-                                    <br/>
-                                    COUNTER TERRORISM FINANCING 
-                                    <br/>
-                                    2025
-                                </h2>
-                            </div>
-                            <div className="mt-12 animate-proceed-button-welcome">
-                                <button
-                                    onClick={handleReset}
-                                    className="px-8 py-3 bg-cyan-500 text-slate-900 font-bold uppercase tracking-widest rounded-md hover:bg-cyan-400 transition-all duration-300 shadow-[0_0_15px_rgba(0,255,255,0.4)] hover:shadow-[0_0_25px_rgba(0,255,255,0.7)]"
-                                >
-                                    Proceed
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                      {status === ScannerStatus.APPROVAL_CHECKS && (
+                          <div className="flex flex-col items-start justify-center w-full max-w-lg mx-auto px-6 space-y-6">
+                      
+                              {/* Line 1 */}
+                              <div className="animate-type-reveal-1 inline-flex items-center space-x-3 pr-2">
+                                  <span className="text-cyan-400 text-2xl font-mono whitespace-nowrap">Status:</span>
+                                  <div className="flex items-center space-x-2 whitespace-nowrap">
+                                      <div className="p-0.5 bg-green-900/50 rounded-full border border-green-500">
+                                          <CheckIcon className="w-6 h-6 text-green-400" />
+                                      </div>
+                                      <span className="text-green-400 text-3xl font-bold tracking-wider drop-shadow-lg">
+                                          APPROVED
+                                      </span>
+                                  </div>
+                              </div>
+                      
+                              {/* Line 2 */}
+                              <div className="animate-type-reveal-2 inline-flex items-center space-x-3 pr-2">
+                                  <span className="text-cyan-400 text-2xl font-mono whitespace-nowrap">Risk Level:</span>
+                                  <div className="flex items-center space-x-2 whitespace-nowrap">
+                                      <div className="p-0.5 bg-yellow-900/50 rounded-full border border-yellow-500">
+                                          <ErrorIcon className="w-6 h-6 text-yellow-400" />
+                                      </div>
+                                      <div className="flex flex-col leading-none">
+                                          <span className="text-yellow-400 text-3xl font-bold tracking-wider drop-shadow-lg">
+                                              HIGH
+                                          </span>
+                                          <span className="text-yellow-500 text-xs uppercase tracking-widest">
+                                              (Monitored)
+                                          </span>
+                                      </div>
+                                  </div>
+                              </div>
+                      
+                          </div>
+                      )}
+
+                      {status === ScannerStatus.ONBOARDED && (
+                          <div className="flex flex-col items-center justify-center text-center animate-onboard-glow">
+                              <div className="mb-8 p-6 rounded-full border-4 border-green-400 bg-green-500/10 shadow-[0_0_50px_rgba(74,222,128,0.4)]">
+                                  <CheckIcon className="w-24 h-24 text-green-400" strokeWidth={3} />
+                              </div>
+                              <h2 className="text-5xl md:text-7xl font-bold text-white tracking-widest uppercase">
+                                  ONBOARDED
+                              </h2>
+                              <p className="mt-6 text-cyan-300 text-sm md:text-base tracking-[0.4em] uppercase">
+                                  Access Privileges Granted
+                              </p>
+                          </div>
+                      )}
+
+                      {status === ScannerStatus.WELCOME && (
+                          <div className="flex flex-col items-center justify-center text-center">
+                              <div className="welcome-text-container">
+                                  <p className="text-2xl md:text-3xl font-semibold text-slate-300 mb-4">WELCOME TO</p>
+                                  <h2 className="text-3xl md:text-4xl font-bold text-cyan-300 leading-tight">
+                                      LABUAN INTERNATIONAL COMPLIANCE CONFERENCE
+                                      <br/>
+                                      2025
+                                  </h2>
+                              </div>
+                              <div className="mt-14 animate-proceed-button-welcome">
+                                  <button
+                                      onClick={handleReset}
+                                      className="px-10 py-4 bg-cyan-500 text-slate-900 font-bold uppercase tracking-widest rounded-lg hover:bg-cyan-400 transition-all duration-300 shadow-[0_0_18px_rgba(0,255,255,0.4)] hover:shadow-[0_0_28px_rgba(0,255,255,0.7)] text-xl"
+                                  >
+                                      Proceed
+                                  </button>
+                              </div>
+                          </div>
+                      )}
+                      
                 </div>
                 <div className="h-12 flex items-center justify-center text-center px-4 py-2 mt-4 border-t border-cyan-500/20">
                     <p className="text-lg font-medium tracking-wider uppercase">{STATUS_MESSAGES[status]}</p>
@@ -662,7 +704,7 @@ const FaceScanner: React.FC = () => {
         
         {status === ScannerStatus.SCAN_PASSED && (
           <div className="text-center mt-3">
-              <div className="risk-high-text">
+              <div className="risk-high-text text-4xl font-extrabold text-red-500">
                 RISK SCORING: HIGH
               </div>
               <div className="animate-name-position">
@@ -691,10 +733,15 @@ const FaceScanner: React.FC = () => {
               alt="Labuan FSA Logo"
               className="w-32 h-32 md:w-48 md:h-48 object-contain flex-shrink-0"
             />
-            <p className="text-slate-300 text-base md:text-lg text-center md:text-left min-h-40 md:min-h-0">
-              {displayedFsaText}
-              {isTyping && <span className="typing-cursor"></span>}
-            </p>
+            <div className="flex flex-col w-full">
+                <h3 className="text-yellow-400 font-bold text-xl md:text-2xl mb-2 uppercase tracking-wider text-center md:text-left shadow-yellow-500/50 drop-shadow-sm">
+                  Enhanced Due Diligence
+                </h3>
+                <p className="text-slate-300 text-base md:text-lg text-center md:text-left min-h-32 md:min-h-0">
+                  {displayedFsaText}
+                  {isTyping && <span className="typing-cursor"></span>}
+                </p>
+            </div>
           </div>
         </div>
       )}

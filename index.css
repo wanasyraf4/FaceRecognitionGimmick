@@ -1,4 +1,5 @@
 
+
 /* === Particle Canvas Background === */
 #particle-canvas {
   position: absolute;
@@ -334,44 +335,24 @@
     }
 }
 
-/* === Risk High Text === */
+/* === Risk High Text (Bottom) === */
 .risk-high-text {
   color: #ef4444; /* red-500 */
-  font-size: 1.1rem; /* like text-lg */
-  font-weight: bold;
+  font-weight: 900;
   letter-spacing: 0.1em;
   opacity: 0;
-  margin-bottom: 0.5rem; /* Spacing above name */
-  animation: risk-appear-glitch 2s forwards 13.6s; /* After PEP + 3s delay */
+  margin-bottom: 0.5rem;
+  animation: risk-text-appear 0.5s ease-out forwards 13.6s, risk-glow-pulse 2s infinite ease-in-out 14.1s;
 }
 
-@keyframes risk-appear-glitch {
-  0% {
-    opacity: 0;
-    transform: scale(1.2);
-    text-shadow: none;
-  }
-  20% {
-    opacity: 1;
-    color: #67e8f9; /* cyan-300 */
-    transform: translate(-5px, 2px) scale(1.2);
-    text-shadow: 5px -2px 0 #ec4899; /* pink-500 */
-  }
-  40% {
-    color: #ef4444; /* red-500 */
-    transform: translate(3px, -3px) scale(1.2);
-    text-shadow: -3px 3px 0 #67e8f9;
-  }
-  60% {
-    opacity: 1;
-    transform: scale(1.2);
-    text-shadow: 0 0 15px rgba(239, 68, 68, 1);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-    text-shadow: 0 0 10px rgba(239, 68, 68, 1), 0 0 20px rgba(239, 68, 68, 0.8), 0 0 40px rgba(255, 0, 0, 0.7);
-  }
+@keyframes risk-text-appear {
+    from { opacity: 0; transform: scale(1.5); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes risk-glow-pulse {
+    0%, 100% { text-shadow: 0 0 20px rgba(239, 68, 68, 0.6); transform: scale(1); }
+    50% { text-shadow: 0 0 40px rgba(239, 68, 68, 1), 0 0 10px rgba(255, 255, 255, 0.5); transform: scale(1.02); }
 }
 
 /* === FSA Popup Overlay Animation === */
@@ -466,4 +447,52 @@
     95% { opacity: 1; }
     96% { opacity: 0.8; }
     97% { opacity: 1; }
+}
+
+/* === Typing Reveal Animation for Approval Check === */
+@keyframes reveal-max-width {
+    from { max-width: 0; opacity: 1; }
+    to { max-width: 100%; opacity: 1; }
+}
+
+/* Speeds updated to fit within ~3.5s total sequence */
+.animate-type-reveal-1 {
+    opacity: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 0;
+    /* Fast wipe reveal */
+    animation: 
+        fade-in-start 0.01s forwards 0.2s, /* Start sooner */
+        reveal-max-width 0.8s ease-out forwards 0.2s, /* Faster type */
+        blink-border-cyan 0.5s step-end 2 0.2s;
+    border-right: 3px solid #22d3ee;
+}
+
+.animate-type-reveal-2 {
+    opacity: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 0;
+    /* Fast wipe reveal, delayed */
+    animation: 
+        fade-in-start 0.01s forwards 1.1s, /* Start after line 1 finishes */
+        reveal-max-width 1.0s ease-out forwards 1.1s, /* Faster type */
+        blink-border-yellow 0.5s step-end infinite 1.1s;
+    border-right: 3px solid #facc15;
+}
+
+@keyframes fade-in-start {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes blink-border-cyan {
+    from, to { border-color: transparent }
+    50% { border-color: #22d3ee }
+}
+
+@keyframes blink-border-yellow {
+    from, to { border-color: transparent }
+    50% { border-color: #facc15 }
 }

@@ -36,6 +36,26 @@ const SCANNING_TEXTS = [
 
 const fullFsaText = "Labuan Financial Services Authority (Labuan FSA) was established on 15 February 1996 under the Labuan Financial Services Authority Act 1996, governed by the Ministry of Finance (MOF), Malaysia. Labuan FSA is the statutory body responsible for the development and administration of the Labuan International Business and Financial Centre (Labuan IBFC).";
 
+const playCountdownVoice = (num: number) => {
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+    // Cancel any ongoing speech to keep timing tight
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(num.toString());
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    
+    // Attempt to select a standard English voice if available, otherwise default
+    const voices = window.speechSynthesis.getVoices();
+    const preferredVoice = voices.find(v => v.lang.startsWith('en'));
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
+    }
+
+    window.speechSynthesis.speak(utterance);
+  }
+};
+
 // Helper component for the scrolling matrix data
 const RandomDataStream: React.FC<{ align?: 'left' | 'right' }> = ({ align = 'left' }) => {
   const [text, setText] = useState<string[]>([]);
@@ -182,7 +202,7 @@ const FaceScanner: React.FC = () => {
 
           // Brief pause to show "Locked" state before capture
           setTimeout(() => captureSnapshot(), 1200); // Extended lock time slightly
-        }, 6000); 
+        }, 10000); 
       };
 
       detectFace();
@@ -213,12 +233,12 @@ const FaceScanner: React.FC = () => {
             if (prev >= 99) return 99;
             return prev + 1;
         });
-      }, 210); // 80ms * 100 steps = 8s roughly
+      }, 80); 
 
       const timer = setTimeout(() => {
           setMatchConfidence(100);
           setStatus(ScannerStatus.SCAN_PASSED);
-      }, 21000); // Changed scan time to 8 seconds
+      }, 8000); 
       
       return () => {
         clearTimeout(timer);
@@ -259,6 +279,7 @@ const FaceScanner: React.FC = () => {
 
     if (status === ScannerStatus.COUNTDOWN) {
       if (countdown > 0) {
+        playCountdownVoice(countdown);
         const timer = setTimeout(() => setCountdown(c => c - 1), 1000);
         return () => clearTimeout(timer);
       } else {
@@ -283,7 +304,13 @@ const FaceScanner: React.FC = () => {
     }
 
     if (status === ScannerStatus.WELCOME) {
-        return;
+        const audio = new Audio('/sounds/welcome.mp3');
+        audio.play().catch(e => console.log("Audio playback failed. Ensure 'sounds/welcome.mp3' exists.", e));
+        
+        return () => {
+            audio.pause();
+            audio.currentTime = 0;
+        };
     }
 
     if (status === ScannerStatus.SUCCESS || status === ScannerStatus.ERROR) {

@@ -1,0 +1,1 @@
+Please drag your welcome audio file into this folder and rename it to 'welcome.mp3'.

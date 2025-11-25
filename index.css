@@ -1,5 +1,6 @@
 
 
+
 /* === Particle Canvas Background === */
 #particle-canvas {
   position: absolute;
@@ -129,44 +130,10 @@
     100% { transform: scale(4); opacity: 0; stroke-width: 0; }
 }
 
-/* === AML Tag Animation === */
-.animate-aml-tag .connecting-line {
-  animation: draw-line 0.4s ease-out forwards 1.0s;
-  width: 0; /* Start at 0 width */
-}
 
-.animate-aml-tag .tag-icon {
-  opacity: 0;
-  transform: translateY(-20px) scale(0.7);
-  animation: 
-    tag-icon-appear 0.5s ease-out forwards 1.2s,
-    icon-glow-pink 2s infinite ease-in-out 2.2s; /* Add glow, start after drawing */
-}
-
-/* AML Icon SVG Styles */
-.aml-icon-shield {
-  stroke-dasharray: 100;
-  stroke-dashoffset: 100;
-  animation: draw-path 0.6s ease-out forwards 1.5s; /* Start after icon starts appearing */
-}
-
-.aml-icon-checkmark {
-  stroke-dasharray: 20;
-  stroke-dashoffset: 20;
-  animation: draw-path 0.3s ease-out forwards 2.0s; /* Start after shield is mostly drawn */
-}
-
-.animate-aml-tag .tag-box {
-  opacity: 0; /* Start invisible */
-  transform: translateY(20px) scale(0.8); /* Initial state for animation */
-  animation: 
-    tag-appear 0.5s ease-out forwards 1.2s,
-    tag-pulse-glow 1s ease-in-out forwards 1.7s;
-}
-
-/* === eKYC Tag Animation === */
+/* === eKYC Tag Animation (Shifted Earlier) === */
 .animate-ekyc-tag .connecting-line {
-    animation: draw-line 0.4s ease-out forwards 4.0s; /* Staggered start */
+    animation: draw-line 0.4s ease-out forwards 0.8s; 
     width: 0;
 }
 
@@ -174,34 +141,34 @@
     opacity: 0;
     transform: translateY(-20px) scale(0.7);
     animation: 
-      tag-icon-appear 0.5s ease-out forwards 4.2s, /* Staggered start */
-      icon-glow-green 2s infinite ease-in-out 5.3s; /* Staggered start */
+      tag-icon-appear 0.5s ease-out forwards 1.0s,
+      icon-glow-green 2s infinite ease-in-out 2.1s;
 }
 
 /* eKYC Icon SVG Styles */
 .ekyc-icon-card {
     stroke-dasharray: 100;
     stroke-dashoffset: 100;
-    animation: draw-path 0.8s ease-out forwards 4.5s; /* Staggered start */
+    animation: draw-path 0.8s ease-out forwards 1.3s;
 }
 
 .ekyc-icon-checkmark {
     stroke-dasharray: 20;
     stroke-dashoffset: 20;
-    animation: draw-path 0.3s ease-out forwards 5.0s; /* Staggered start */
+    animation: draw-path 0.3s ease-out forwards 1.8s;
 }
 
 .animate-ekyc-tag .tag-box {
     opacity: 0;
     transform: translateY(20px) scale(0.8);
     animation: 
-      tag-appear 0.5s ease-out forwards 4.2s, /* Staggered start */
-      tag-pulse-glow-green 1s ease-in-out forwards 4.7s; /* Staggered start */
+      tag-appear 0.5s ease-out forwards 1.0s,
+      tag-pulse-glow-green 1s ease-in-out forwards 1.5s;
 }
 
-/* === World Check Tag Animation === */
+/* === World Check Tag Animation (Shifted Earlier) === */
 .animate-world-check-tag .connecting-line {
-  animation: draw-line 0.4s ease-out forwards 7.0s; /* Staggered start */
+  animation: draw-line 0.4s ease-out forwards 3.8s;
   width: 0;
 }
 
@@ -209,29 +176,29 @@
   opacity: 0;
   transform: translateY(-20px) scale(0.7);
   animation: 
-    tag-icon-appear 0.5s ease-out forwards 7.2s, /* Staggered start */
-    icon-glow-cyan 2s infinite ease-in-out 8.3s; /* Staggered start */
+    tag-icon-appear 0.5s ease-out forwards 4.0s,
+    icon-glow-cyan 2s infinite ease-in-out 5.1s;
 }
 
 /* World Check Icon SVG Styles */
 .world-check-icon-globe {
   stroke-dasharray: 200;
   stroke-dashoffset: 200;
-  animation: draw-path 0.8s ease-out forwards 7.5s; /* Staggered start */
+  animation: draw-path 0.8s ease-out forwards 4.3s;
 }
 
 .world-check-icon-checkmark {
   stroke-dasharray: 20;
   stroke-dashoffset: 20;
-  animation: draw-path 0.3s ease-out forwards 8.0s; /* Staggered start */
+  animation: draw-path 0.3s ease-out forwards 4.8s;
 }
 
 .animate-world-check-tag .tag-box {
   opacity: 0;
   transform: translateY(20px) scale(0.8);
   animation: 
-    tag-appear 0.5s ease-out forwards 7.2s, /* Staggered start */
-    tag-pulse-glow-cyan 1s ease-in-out forwards 7.7s; /* Staggered start */
+    tag-appear 0.5s ease-out forwards 4.0s,
+    tag-pulse-glow-cyan 1s ease-in-out forwards 4.5s;
 }
 
 
@@ -294,7 +261,7 @@
 /* === Verified Info Text Animation === */
 .animate-name-position {
   opacity: 0;
-  animation: fade-in-up 0.6s ease-out forwards 8.5s; /* After tags */
+  animation: fade-in-up 0.6s ease-out forwards 5.5s; 
 }
 
 @keyframes fade-in-up {
@@ -311,24 +278,25 @@
 /* === PEP Detected Tag Animation === */
 .animate-pep-tag {
     opacity: 0;
-    animation: pep-appear-alert 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 11.1s; /* After name + 2s delay */
+    /* Removed translateX(-50%) to work with flex layout at bottom */
+    animation: pep-appear-alert 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 8.1s;
 }
 
 @keyframes pep-appear-alert {
     0% {
         opacity: 0;
-        transform: scale(0.8) translateX(-50%);
+        transform: scale(0.8);
     }
     50% {
         opacity: 1;
-        transform: scale(1.1) translateX(-50%);
+        transform: scale(1.1);
         box-shadow: 0 0 30px rgba(250, 204, 21, 1), 0 0 15px rgba(250, 204, 21, 0.8) inset;
         border-color: rgb(252 211 77);
         text-shadow: 0 0 10px rgba(252, 211, 77, 0.9);
     }
     100% {
         opacity: 1;
-        transform: scale(1) translateX(-50%);
+        transform: scale(1);
         box-shadow: 0 0 25px rgba(250, 204, 21, 0.8), 0 0 10px rgba(250, 204, 21, 0.6) inset;
         border-color: rgb(252 211 77);
         text-shadow: 0 0 8px rgba(252, 211, 77, 0.7);
@@ -342,7 +310,7 @@
   letter-spacing: 0.1em;
   opacity: 0;
   margin-bottom: 0.5rem;
-  animation: risk-text-appear 0.5s ease-out forwards 13.6s, risk-glow-pulse 2s infinite ease-in-out 14.1s;
+  animation: risk-text-appear 0.5s ease-out forwards 10.6s, risk-glow-pulse 2s infinite ease-in-out 11.1s;
 }
 
 @keyframes risk-text-appear {

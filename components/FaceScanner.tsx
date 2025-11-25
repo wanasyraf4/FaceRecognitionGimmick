@@ -1,6 +1,8 @@
+
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ScannerStatus } from '../types';
-import { CheckIcon, ErrorIcon, FaceMeshIcon, AmlPassedIcon, WorldCheckIcon, EkycIcon } from './Icons';
+import { CheckIcon, ErrorIcon, FaceMeshIcon, WorldCheckIcon, EkycIcon } from './Icons';
+import { SoundEffects } from '../utils/SoundEffects';
 
 const STATUS_MESSAGES: { [key in ScannerStatus]: string } = {
   [ScannerStatus.IDLE]: 'Awaiting Initialization',
@@ -15,7 +17,7 @@ const STATUS_MESSAGES: { [key in ScannerStatus]: string } = {
   [ScannerStatus.COUNTDOWN]: 'System Resetting...',
   [ScannerStatus.APPROVAL_CHECKS]: 'Verifying Compliance Status...',
   [ScannerStatus.ONBOARDED]: 'Onboarding Complete',
-  [ScannerStatus.WELCOME]: 'Welcome Aboard',
+  [ScannerStatus.WELCOME]: '',
 };
 
 const SCANNING_TEXTS = [
@@ -34,7 +36,7 @@ const SCANNING_TEXTS = [
   'Compiling Final Report...',
 ];
 
-const fullFsaText = "Labuan Financial Services Authority (Labuan FSA) was established on 15 February 1996 under the Labuan Financial Services Authority Act 1996, governed by the Ministry of Finance (MOF), Malaysia. Labuan FSA is the statutory body responsible for the development and administration of the Labuan International Business and Financial Centre (Labuan IBFC).";
+const fullFsaText = "Labuan FSA is the statutory body responsible for the development and administration of the Labuan International Business and Financial Centre (Labuan IBFC)";
 
 const playCountdownVoice = (num: number) => {
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -108,6 +110,10 @@ const FaceScanner: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  
+  // Audio loop cleanups & Timer refs
+  const stopScanLoopRef = useRef<() => void>(() => {});
+  const soundTimeouts = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -116,14 +122,20 @@ const FaceScanner: React.FC = () => {
     }
   }, []);
 
+  const clearSoundTimeouts = useCallback(() => {
+      soundTimeouts.current.forEach(clearTimeout);
+      soundTimeouts.current = [];
+  }, []);
+
   const handleReset = useCallback(() => {
+    clearSoundTimeouts();
     setSnapshot(null);
     setErrorMessage(null);
     setDetectionBox(null);
     setShowFsaPopup(false);
     setMatchConfidence(0);
     setStatus(ScannerStatus.IDLE);
-  }, []);
+  }, [clearSoundTimeouts]);
 
   const captureSnapshot = useCallback(() => {
     if (videoRef.current && canvasRef.current) {
@@ -140,13 +152,16 @@ const FaceScanner: React.FC = () => {
         const dataUrl = canvas.toDataURL('image/png');
         setSnapshot(dataUrl);
         setStatus(ScannerStatus.CAPTURED);
+        SoundEffects.playLockOn(); // SOUND EFFECT: Capture
         stopCamera();
       }
     }
   }, [stopCamera]);
 
   useEffect(() => {
+    // === STATUS: INITIALIZING ===
     if (status === ScannerStatus.INITIALIZING) {
+      SoundEffects.playPowerUp(); // SOUND EFFECT: Init
       navigator.mediaDevices
         .getUserMedia({ video: { facingMode: 'user' } })
         .then((stream) => {
@@ -166,6 +181,7 @@ const FaceScanner: React.FC = () => {
         });
     }
 
+    // === STATUS: DETECTING ===
     if (status === ScannerStatus.DETECTING) {
       const detectionActive = { current: true };
 
@@ -211,12 +227,17 @@ const FaceScanner: React.FC = () => {
       };
     }
 
+    // === STATUS: CAPTURED ===
     if (status === ScannerStatus.CAPTURED) {
       const timer = setTimeout(() => setStatus(ScannerStatus.SCANNING), 1000);
       return () => clearTimeout(timer);
     }
 
+    // === STATUS: SCANNING ===
     if (status === ScannerStatus.SCANNING) {
+      // SOUND EFFECT: Start Loop
+      stopScanLoopRef.current = SoundEffects.playScanLoop();
+      
       setScanningMessage(SCANNING_TEXTS[0]);
       setMatchConfidence(0);
       let textIndex = 0;
@@ -225,7 +246,8 @@ const FaceScanner: React.FC = () => {
       const textInterval = setInterval(() => {
         textIndex = (textIndex + 1) % SCANNING_TEXTS.length;
         setScanningMessage(SCANNING_TEXTS[textIndex]);
-      }, 600); // Slightly faster to see more text in 6s
+        SoundEffects.playDataTick(); // SOUND EFFECT: Data tick
+      }, 600); 
 
       // Confidence counter
       const confidenceInterval = setInterval(() => {
@@ -241,34 +263,69 @@ const FaceScanner: React.FC = () => {
       }, 8000); 
       
       return () => {
+        stopScanLoopRef.current(); // SOUND EFFECT: Stop Loop
         clearTimeout(timer);
         clearInterval(textInterval);
         clearInterval(confidenceInterval);
       };
     }
     
+    // === STATUS: SCAN_PASSED (Orchestrated Sequence) ===
     if (status === ScannerStatus.SCAN_PASSED) {
+        SoundEffects.playSuccess(); // SOUND EFFECT: Success
+
+        // Clear any previous sound timeouts just in case
+        clearSoundTimeouts();
+
+        // 1. eKYC Tag
+        soundTimeouts.current.push(
+            setTimeout(() => SoundEffects.playTagAppear(), 1200)
+        );
+
+        // 2. World Check Tag
+        soundTimeouts.current.push(
+            setTimeout(() => SoundEffects.playTagAppear(), 4200)
+        );
+
+        // 3. Name Reveal
+        soundTimeouts.current.push(
+            setTimeout(() => SoundEffects.playDataReveal(), 5500)
+        );
+
+        // 4. PEP Tag
+        soundTimeouts.current.push(
+            setTimeout(() => SoundEffects.playPepAlert(), 8100)
+        );
+
+        // 5. Risk High Text
+        soundTimeouts.current.push(
+            setTimeout(() => SoundEffects.playRiskAlert(), 10600)
+        );
+
         // Timer to show the popup after the risk animation
         const showPopupTimer = setTimeout(() => {
             setShowFsaPopup(true);
-        }, 15600); 
+        }, 12600); 
 
-        // Timer to hide the popup after 11 seconds
+        // Timer to hide the popup
         const hidePopupTimer = setTimeout(() => {
             setShowFsaPopup(false);
-        }, 15600 + 11000); 
+        }, 23600); 
 
+        // Finalize
         const timer = setTimeout(() => {
             setStatus(ScannerStatus.FINALIZING);
-        }, 29000); 
+        }, 26000); 
         
         return () => {
+            clearSoundTimeouts();
             clearTimeout(showPopupTimer);
             clearTimeout(hidePopupTimer);
             clearTimeout(timer);
         };
     }
 
+    // === STATUS: FINALIZING ===
     if (status === ScannerStatus.FINALIZING) {
       const timer = setTimeout(() => {
         setCountdown(5);
@@ -277,18 +334,20 @@ const FaceScanner: React.FC = () => {
       return () => clearTimeout(timer);
     }
 
+    // === STATUS: COUNTDOWN ===
     if (status === ScannerStatus.COUNTDOWN) {
       if (countdown > 0) {
         playCountdownVoice(countdown);
         const timer = setTimeout(() => setCountdown(c => c - 1), 1000);
         return () => clearTimeout(timer);
       } else {
-        // Instead of going straight to ONBOARDED, go to APPROVAL_CHECKS
         setStatus(ScannerStatus.APPROVAL_CHECKS);
       }
     }
 
+    // === STATUS: APPROVAL_CHECKS ===
     if (status === ScannerStatus.APPROVAL_CHECKS) {
+      SoundEffects.playPowerUp(); // Reuse power up for a positive transition sound
       // Allow time for typing animations to play (approx 3.5 seconds)
       const timer = setTimeout(() => {
           setStatus(ScannerStatus.ONBOARDED);
@@ -296,13 +355,16 @@ const FaceScanner: React.FC = () => {
       return () => clearTimeout(timer);
     }
     
+    // === STATUS: ONBOARDED ===
     if (status === ScannerStatus.ONBOARDED) {
+      SoundEffects.playSuccess(); // Final success sound
       const timer = setTimeout(() => {
           setStatus(ScannerStatus.WELCOME);
       }, 3000); 
       return () => clearTimeout(timer);
     }
 
+    // === STATUS: WELCOME ===
     if (status === ScannerStatus.WELCOME) {
         const audio = new Audio('/sounds/welcome.mp3');
         audio.play().catch(e => console.log("Audio playback failed. Ensure 'sounds/welcome.mp3' exists.", e));
@@ -316,14 +378,16 @@ const FaceScanner: React.FC = () => {
     if (status === ScannerStatus.SUCCESS || status === ScannerStatus.ERROR) {
       stopCamera();
     }
-  }, [status, stopCamera, captureSnapshot, countdown, handleReset]);
+  }, [status, stopCamera, captureSnapshot, countdown, handleReset, clearSoundTimeouts]);
 
+  // === FSA Popup Typing Logic ===
   useEffect(() => {
     if (showFsaPopup) {
       setIsTyping(true);
       let index = 0;
       const intervalId = setInterval(() => {
         setDisplayedFsaText(fullFsaText.substring(0, index));
+        SoundEffects.playDataTick(); // SOUND EFFECT: Typing
         index++;
         if (index > fullFsaText.length) {
           clearInterval(intervalId);
@@ -343,11 +407,8 @@ const FaceScanner: React.FC = () => {
   useEffect(() => () => stopCamera(), [stopCamera]);
 
   const handleStart = () => {
-    setSnapshot(null);
-    setErrorMessage(null);
-    setDetectionBox(null);
-    setShowFsaPopup(false);
-    setMatchConfidence(0);
+    SoundEffects.init(); // Initialize Audio Context on user interaction
+    handleReset();
     setStatus(ScannerStatus.INITIALIZING);
   };
 
@@ -405,11 +466,12 @@ const FaceScanner: React.FC = () => {
       default:
         return (
           <div className="relative w-full aspect-square max-w-md mx-auto group">
-            {/* PEP DETECTED TAG */}
+            
+            {/* RISK SCORING: HIGH (Moved to Top) */}
             {status === ScannerStatus.SCAN_PASSED && (
-              <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-10 animate-pep-tag">
-                <div className="px-4 py-2 border border-yellow-500 text-yellow-400 font-bold rounded-md text-xl bg-black/70 backdrop-blur-md whitespace-nowrap">
-                  <span>[PEP-DETECTED]</span>
+              <div className="absolute -top-16 left-0 right-0 z-10 flex justify-center">
+                <div className="risk-high-text text-3xl md:text-3xl font-extrabold text-red-500 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
+                  RISK SCORING: HIGH
                 </div>
               </div>
             )}
@@ -577,38 +639,27 @@ const FaceScanner: React.FC = () => {
               )}
             </div>
 
-            {/* Floating tags - OUTSIDE frame (unchanged) */}
+            {/* Floating tags - OUTSIDE frame */}
             {status === ScannerStatus.SCAN_PASSED && detectionBox && (
               <>
-                {/* 🟣 AML Passed Tag */}
-                <div className="absolute top-1/4 -translate-y-1/2 left-full flex items-center pointer-events-none animate-aml-tag z-50">
-                  <div className="connecting-line border-t-2 border-pink-500"></div>
-                  <div className="ml-3 relative flex flex-col items-center">
-                    <AmlPassedIcon className="tag-icon w-16 h-16 mb-2 text-pink-400" />
-                    <div className="tag-box px-3 py-1 flex items-center justify-center border border-pink-500 text-pink-400 font-bold rounded-md text-xl bg-black/70 backdrop-blur-md shadow-[0_0_12px_rgba(236,72,153,0.7)]">
-                      <span>AML&nbsp;Passed</span>
-                    </div>
-                  </div>
-                </div>
-                
                 {/* 🟢 eKYC Tag */}
-                <div className="absolute top-3/5 -translate-y-1/2 left-full flex items-center pointer-events-none animate-ekyc-tag z-50">
-                    <div className="connecting-line border-t-2 border-green-500"></div>
-                    <div className="ml-2 relative flex flex-col items-center">
-                        <EkycIcon className="tag-icon w-16 h-16 mb-2 text-green-400" />
-                        <div className="tag-box px-3 py-1 flex items-center justify-center border border-green-500 text-green-400 font-bold rounded-md text-xl bg-black/70 backdrop-blur-md shadow-[0_0_12px_rgba(74,222,128,0.7)]">
+                <div className="absolute top-[35%] -translate-y-1/2 left-full flex items-center pointer-events-none animate-ekyc-tag z-50 pl-1">
+                    <div className="connecting-line border-t-2 border-green-500 shadow-[0_0_8px_rgba(74,222,128,0.8)]"></div>
+                    <div className="ml-3 relative flex flex-col items-center">
+                        <EkycIcon className="tag-icon w-16 h-16 mb-2 text-green-400 filter drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]" />
+                        <div className="tag-box px-4 py-1.5 flex items-center justify-center border border-green-500 text-green-400 font-bold rounded-md text-lg bg-black/80 backdrop-blur-md shadow-[0_0_15px_rgba(74,222,128,0.5)] whitespace-nowrap">
                            <span>eKYC</span>
                         </div>
                     </div>
                 </div>
 
                 {/* 🔵 World Check Tag */}
-                <div className="absolute top-3/4 -translate-y-1/2 right-full flex flex-row-reverse items-center pointer-events-none animate-world-check-tag z-50">
-                  <div className="connecting-line border-t-2 border-cyan-500"></div>
+                <div className="absolute top-[65%] -translate-y-1/2 right-full flex flex-row-reverse items-center pointer-events-none animate-world-check-tag z-50 pr-1">
+                  <div className="connecting-line border-t-2 border-cyan-500 shadow-[0_0_8px_rgba(34,211,238,0.8)]"></div>
                   <div className="mr-3 relative flex flex-col items-center">
-                    <WorldCheckIcon className="tag-icon w-16 h-16 mb-2 text-cyan-400" />
-                    <div className="tag-box px-3 py-1 flex items-center justify-center border border-cyan-500 text-cyan-400 font-bold rounded-md text-xl bg-black/70 backdrop-blur-md shadow-[0_0_12px_rgba(34,211,238,0.7)]">
-                      <span>World&nbsp;Check</span>
+                    <WorldCheckIcon className="tag-icon w-16 h-16 mb-2 text-cyan-400 filter drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
+                    <div className="tag-box px-4 py-1.5 flex items-center justify-center border border-cyan-500 text-cyan-400 font-bold rounded-md text-lg bg-black/80 backdrop-blur-md shadow-[0_0_15px_rgba(34,211,238,0.5)] whitespace-nowrap">
+                      <span>World Check</span>
                     </div>
                   </div>
                 </div>
@@ -687,7 +738,7 @@ const FaceScanner: React.FC = () => {
                                   <CheckIcon className="w-24 h-24 text-green-400" strokeWidth={3} />
                               </div>
                               <h2 className="text-5xl md:text-7xl font-bold text-white tracking-widest uppercase">
-                                  ONBOARDED
+                                  APPROVED
                               </h2>
                               <p className="mt-6 text-cyan-300 text-sm md:text-base tracking-[0.4em] uppercase">
                                   Access Privileges Granted
@@ -730,13 +781,17 @@ const FaceScanner: React.FC = () => {
         <div className="w-full aspect-square flex items-center justify-center">{renderContent()}</div>
         
         {status === ScannerStatus.SCAN_PASSED && (
-          <div className="text-center mt-3">
-              <div className="risk-high-text text-4xl font-extrabold text-red-500">
-                RISK SCORING: HIGH
+          <div className="text-center mt-3 flex flex-col items-center">
+              {/* PEP DETECTED TAG (Moved to Bottom) */}
+              <div className="mb-2 animate-pep-tag">
+                <div className="px-4 py-2 border border-yellow-500 text-yellow-400 font-bold rounded-md text-xl bg-black/70 backdrop-blur-md whitespace-nowrap shadow-[0_0_15px_rgba(234,179,8,0.5)]">
+                  <span>PEP-DETECTED</span>
+                </div>
               </div>
+
               <div className="animate-name-position">
                 <p className="text-2xl font-bold text-slate-100">Name: AFFENDI RASHDI</p>
-                <p className="text-2xl text-cyan-400">Position: DIRECTOR GENERAL LABUAN FSA</p>
+                <p className="text-2xl font-bold text-slate-100">Position: DIRECTOR GENERAL LABUAN FSA</p>
               </div>
             </div>
         )}

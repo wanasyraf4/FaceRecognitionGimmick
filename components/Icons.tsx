@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {
@@ -144,31 +145,6 @@ export const FaceMeshIcon: React.FC<IconProps> = ({ className, ...props }) => {
   );
 };
 
-export const AmlPassedIcon: React.FC<IconProps> = ({ className, ...props }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={1.5}
-    {...props}
-  >
-    <path
-      className="aml-icon-shield"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M12 2L4 5v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V5l-8-3z"
-    />
-    <path
-      className="aml-icon-checkmark"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M9 12.5l2 2 4-4"
-    />
-  </svg>
-);
-
 export const WorldCheckIcon: React.FC<IconProps> = ({ className, ...props }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -189,7 +165,7 @@ export const WorldCheckIcon: React.FC<IconProps> = ({ className, ...props }) => 
       className="world-check-icon-checkmark"
       strokeLinecap="round"
       strokeLinejoin="round"
-      d="M9 12l2 2 4-4"
+      d="M9 12.5l2 2 4-4"
     />
   </svg>
 );

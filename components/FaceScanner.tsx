@@ -15,7 +15,6 @@ const STATUS_MESSAGES: { [key in ScannerStatus]: string } = {
   [ScannerStatus.ERROR]: 'Access Denied. System Error.',
   [ScannerStatus.FINALIZING]: 'Finalizing Session...',
   [ScannerStatus.COUNTDOWN]: 'System Resetting...',
-  [ScannerStatus.APPROVAL_CHECKS]: 'Verifying Compliance Status...',
   [ScannerStatus.ONBOARDED]: 'Onboarding Complete',
   [ScannerStatus.WELCOME]: '',
 };
@@ -87,7 +86,7 @@ const RandomDataStream: React.FC<{ align?: 'left' | 'right' }> = ({ align = 'lef
   }, []);
   
   return (
-    <div className={`flex flex-col font-mono text-[10px] text-cyan-500/60 leading-[1.2] whitespace-nowrap ${align === 'right' ? 'items-end text-right' : 'items-start text-left'}`}>
+    <div className={`flex flex-col text-[10px] text-cyan-500/60 leading-[1.2] whitespace-nowrap ${align === 'right' ? 'items-end text-right' : 'items-start text-left'}`}>
       {text.map((line, i) => (
         <span key={i} style={{ opacity: Math.random() > 0.5 ? 1 : 0.5 }}>{line}</span>
       ))}
@@ -341,18 +340,8 @@ const FaceScanner: React.FC = () => {
         const timer = setTimeout(() => setCountdown(c => c - 1), 1000);
         return () => clearTimeout(timer);
       } else {
-        setStatus(ScannerStatus.APPROVAL_CHECKS);
+        setStatus(ScannerStatus.ONBOARDED); // Skip APPROVAL_CHECKS, go directly to ONBOARDED
       }
-    }
-
-    // === STATUS: APPROVAL_CHECKS ===
-    if (status === ScannerStatus.APPROVAL_CHECKS) {
-      SoundEffects.playPowerUp(); // Reuse power up for a positive transition sound
-      // Allow time for typing animations to play (approx 3.5 seconds)
-      const timer = setTimeout(() => {
-          setStatus(ScannerStatus.ONBOARDED);
-      }, 3500);
-      return () => clearTimeout(timer);
     }
     
     // === STATUS: ONBOARDED ===
@@ -565,7 +554,7 @@ const FaceScanner: React.FC = () => {
                      {/* Match Confidence Display */}
                      <div className="absolute top-[20%] left-1/2 -translate-x-1/2 flex flex-col items-center z-30">
                          <div className="text-[10px] text-cyan-400 uppercase tracking-widest mb-1">Match Probability</div>
-                         <div className="text-3xl font-mono font-bold text-cyan-200 shadow-cyan-500/50 drop-shadow-md">
+                         <div className="text-3xl font-bold text-cyan-200 shadow-cyan-500/50 drop-shadow-md">
                             {matchConfidence}%
                          </div>
                      </div>
@@ -608,11 +597,11 @@ const FaceScanner: React.FC = () => {
                   <div className="absolute bottom-4 right-4 w-16 h-16 border-b-2 border-r-2 border-cyan-500 rounded-br-lg opacity-80"></div>
                   
                   {/* Corner Text Info */}
-                  <div className="absolute top-6 left-6 text-[10px] text-cyan-500 font-mono">
+                  <div className="absolute top-6 left-6 text-[10px] text-cyan-500">
                       <div>SYS: ONLINE</div>
                       <div>ISO: 400</div>
                   </div>
-                  <div className="absolute top-6 right-6 text-[10px] text-cyan-500 font-mono text-right">
+                  <div className="absolute top-6 right-6 text-[10px] text-cyan-500 text-right">
                       <div>BAT: 98%</div>
                       <div>NET: SECURE</div>
                   </div>
@@ -620,7 +609,7 @@ const FaceScanner: React.FC = () => {
                   {/* 7. Bottom Status Bar */}
                   <div className="absolute bottom-16 left-0 right-0 flex justify-center">
                     <div className="bg-black/80 backdrop-blur-md border-x border-cyan-500/50 px-8 py-2 shadow-[0_0_15px_rgba(0,255,255,0.2)] skew-x-12 transform">
-                        <p className="font-mono text-xs md:text-sm uppercase tracking-[0.2em] text-cyan-300 flicker-text min-w-[220px] text-center -skew-x-12">
+                        <p className="text-xs md:text-sm uppercase tracking-[0.2em] text-cyan-300 flicker-text min-w-[220px] text-center -skew-x-12">
                         {scanningMessage}
                         </p>
                     </div>
@@ -674,7 +663,6 @@ const FaceScanner: React.FC = () => {
     if (
       status === ScannerStatus.FINALIZING ||
       status === ScannerStatus.COUNTDOWN ||
-      status === ScannerStatus.APPROVAL_CHECKS ||
       status === ScannerStatus.ONBOARDED ||
       status === ScannerStatus.WELCOME
     ) {
@@ -695,42 +683,6 @@ const FaceScanner: React.FC = () => {
                             </div>
                         </div>
                     )}
-                      {status === ScannerStatus.APPROVAL_CHECKS && (
-                          <div className="flex flex-col items-start justify-center w-full max-w-lg mx-auto px-6 space-y-6">
-                      
-                              {/* Line 1 */}
-                              <div className="animate-type-reveal-1 inline-flex items-center space-x-3 pr-2">
-                                  <span className="text-cyan-400 text-2xl font-mono whitespace-nowrap">Status:</span>
-                                  <div className="flex items-center space-x-2 whitespace-nowrap">
-                                      <div className="p-0.5 bg-green-900/50 rounded-full border border-green-500">
-                                          <CheckIcon className="w-6 h-6 text-green-400" />
-                                      </div>
-                                      <span className="text-green-400 text-3xl font-bold tracking-wider drop-shadow-lg">
-                                          APPROVED
-                                      </span>
-                                  </div>
-                              </div>
-                      
-                              {/* Line 2 */}
-                              <div className="animate-type-reveal-2 inline-flex items-center space-x-3 pr-2">
-                                  <span className="text-cyan-400 text-2xl font-mono whitespace-nowrap">Risk Level:</span>
-                                  <div className="flex items-center space-x-2 whitespace-nowrap">
-                                      <div className="p-0.5 bg-yellow-900/50 rounded-full border border-yellow-500">
-                                          <ErrorIcon className="w-6 h-6 text-yellow-400" />
-                                      </div>
-                                      <div className="flex flex-col leading-none">
-                                          <span className="text-yellow-400 text-3xl font-bold tracking-wider drop-shadow-lg">
-                                              HIGH
-                                          </span>
-                                          <span className="text-yellow-500 text-xs uppercase tracking-widest">
-                                              (Monitored)
-                                          </span>
-                                      </div>
-                                  </div>
-                              </div>
-                      
-                          </div>
-                      )}
 
                       {status === ScannerStatus.ONBOARDED && (
                           <div className="flex flex-col items-center justify-center text-center animate-onboard-glow">

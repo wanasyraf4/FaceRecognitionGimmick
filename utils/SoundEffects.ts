@@ -218,65 +218,52 @@ class SoundEffectsManager {
     }
   }
 
-  // 5. Tag Appear: Sci-fi holographic slide-in (FM Synthesis)
+  // 5. Tag Appear: Sci-fi holographic slide-in (Clean, Airy, High-Tech)
+  // Used for: eKYC and World Check
   playTagAppear() {
-      if (!this.ctx) return;
+      if (!this.ctx || !this.masterGain) return;
       const t = this.ctx.currentTime;
 
-      // FM Bell-like sound
-      const carrier = this.ctx.createOscillator();
-      const modulator = this.ctx.createOscillator();
-      const modGain = this.ctx.createGain();
-      const masterEnv = this.ctx.createGain();
-
-      carrier.type = 'sine';
-      carrier.frequency.setValueAtTime(800, t);
-      carrier.frequency.exponentialRampToValueAtTime(1200, t + 0.1); // Pitch up
-
-      modulator.type = 'square';
-      modulator.frequency.setValueAtTime(200, t);
-      
-      modGain.gain.setValueAtTime(500, t);
-      modGain.gain.exponentialRampToValueAtTime(10, t + 0.3); // FM amount decays
-
-      modulator.connect(modGain);
-      modGain.connect(carrier.frequency);
-      
-      carrier.connect(masterEnv);
-      masterEnv.connect(this.masterGain!);
-
-      masterEnv.gain.setValueAtTime(0, t);
-      masterEnv.gain.linearRampToValueAtTime(0.2, t + 0.05);
-      masterEnv.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
-
-      carrier.start(t);
-      modulator.start(t);
-      carrier.stop(t + 0.6);
-      modulator.stop(t + 0.6);
-      
-      // Accompanying 'swish'
+      // Element 1: "Air Swish" - Highpass filtered noise sweep
       const buffer = this.getNoiseBuffer();
       if (buffer) {
           const noise = this.ctx.createBufferSource();
           noise.buffer = buffer;
-          const nGain = this.ctx.createGain();
-          const nFilter = this.ctx.createBiquadFilter();
           
-          nFilter.type = 'bandpass';
-          nFilter.Q.value = 1;
-          nFilter.frequency.setValueAtTime(2000, t);
-          nFilter.frequency.linearRampToValueAtTime(6000, t + 0.3);
+          const noiseFilter = this.ctx.createBiquadFilter();
+          noiseFilter.type = 'highpass';
+          noiseFilter.frequency.setValueAtTime(2000, t);
+          noiseFilter.frequency.exponentialRampToValueAtTime(8000, t + 0.3); // Sweep up
+          
+          const noiseGain = this.ctx.createGain();
+          noiseGain.gain.setValueAtTime(0, t);
+          noiseGain.gain.linearRampToValueAtTime(0.06, t + 0.1);
+          noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
 
-          noise.connect(nFilter);
-          nFilter.connect(nGain);
-          nGain.connect(this.masterGain!);
-
-          nGain.gain.setValueAtTime(0.05, t);
-          nGain.gain.linearRampToValueAtTime(0, t + 0.3);
+          noise.connect(noiseFilter);
+          noiseFilter.connect(noiseGain);
+          noiseGain.connect(this.masterGain);
           
           noise.start(t);
-          noise.stop(t + 0.4);
+          noise.stop(t + 0.5);
       }
+
+      // Element 2: "Glass Ping" - A pure sine tone with very fast envelope
+      const osc = this.ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1600, t);
+      osc.frequency.exponentialRampToValueAtTime(1800, t + 0.05);
+      
+      const oscGain = this.ctx.createGain();
+      oscGain.gain.setValueAtTime(0, t);
+      oscGain.gain.linearRampToValueAtTime(0.08, t + 0.02);
+      oscGain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+      
+      osc.connect(oscGain);
+      oscGain.connect(this.masterGain);
+      
+      osc.start(t);
+      osc.stop(t + 0.3);
   }
 
   // 6. Name Reveal: Fast digital readout
@@ -295,70 +282,83 @@ class SoundEffectsManager {
       }
   }
 
-  // 7. PEP Alert: Glitchy Warning
+  // 7. PEP Alert: Sharp Digital Alert (More refined than the old rattle)
   playPepAlert() {
-      if (!this.ctx) return;
+      if (!this.ctx || !this.masterGain) return;
       const t = this.ctx.currentTime;
 
-      // Two dissonant trills
+      // Rapid, sharp double-beep
       [0, 0.15].forEach(start => {
           const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth'; // More bite than sine
+          osc.frequency.setValueAtTime(880, t + start);
           
-          osc.type = 'sawtooth';
-          osc.frequency.setValueAtTime(440, t + start);
-          osc.frequency.linearRampToValueAtTime(880, t + start + 0.1); // Slide up
-          
-          // Amplitude Modulation for roughness
-          const am = this.ctx.createOscillator();
-          am.type = 'square';
-          am.frequency.value = 30; // 30Hz rattle
-          const amGain = this.ctx.createGain();
-          amGain.gain.value = 0.5;
-          
-          am.connect(amGain);
-          amGain.connect(gain.gain);
-          
-          osc.connect(gain);
-          gain.connect(this.masterGain!);
+          // Lowpass to round off the harsh edge slightly
+          const filter = this.ctx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.value = 3000;
 
-          gain.gain.setValueAtTime(0.3, t + start);
-          gain.gain.exponentialRampToValueAtTime(0.01, t + start + 0.3);
+          const gain = this.ctx.createGain();
+          gain.gain.setValueAtTime(0.1, t + start);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + start + 0.1);
+          
+          osc.connect(filter);
+          filter.connect(gain);
+          gain.connect(this.masterGain!);
           
           osc.start(t + start);
-          am.start(t + start);
-          osc.stop(t + start + 0.3);
-          am.stop(t + start + 0.3);
+          osc.stop(t + start + 0.12);
       });
   }
 
-  // 8. Risk High: Menacing pulse
+  // 8. Risk High: Ominous Cinematic Impact (Futuristic "Braam")
   playRiskAlert() {
-      if (!this.ctx) return;
+      if (!this.ctx || !this.masterGain) return;
       const t = this.ctx.currentTime;
 
-      // Low frequency throbs
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
+      // Layer 1: Deep Bass Sawtooth (The "Growl")
+      const osc1 = this.ctx.createOscillator();
+      osc1.type = 'sawtooth';
+      osc1.frequency.setValueAtTime(55, t); // Low A
       
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(110, t);
+      const filter1 = this.ctx.createBiquadFilter();
+      filter1.type = 'lowpass';
+      filter1.frequency.setValueAtTime(100, t);
+      filter1.frequency.exponentialRampToValueAtTime(600, t + 0.3); // Opens up aggressively
+      filter1.frequency.exponentialRampToValueAtTime(100, t + 1.0); // Closes back
+      filter1.Q.value = 5; // High resonance for that "laser-like" edge
+
+      const gain1 = this.ctx.createGain();
+      gain1.gain.setValueAtTime(0, t);
+      gain1.gain.linearRampToValueAtTime(0.5, t + 0.05);
+      gain1.gain.exponentialRampToValueAtTime(0.001, t + 1.5);
+
+      osc1.connect(filter1);
+      filter1.connect(gain1);
+      gain1.connect(this.masterGain);
+
+      // Layer 2: Dissonant Tension (Tritone above)
+      const osc2 = this.ctx.createOscillator();
+      osc2.type = 'sawtooth';
+      osc2.frequency.setValueAtTime(82, t); // ~Eb (Tritone of A)
       
-      // Pitch drop
-      osc.frequency.exponentialRampToValueAtTime(55, t + 0.6);
+      const filter2 = this.ctx.createBiquadFilter();
+      filter2.type = 'bandpass';
+      filter2.frequency.setValueAtTime(300, t);
+      
+      const gain2 = this.ctx.createGain();
+      gain2.gain.setValueAtTime(0, t);
+      gain2.gain.linearRampToValueAtTime(0.15, t + 0.1);
+      gain2.gain.exponentialRampToValueAtTime(0.001, t + 1.0);
 
-      osc.connect(gain);
-      gain.connect(this.masterGain!);
+      osc2.connect(filter2);
+      filter2.connect(gain2);
+      gain2.connect(this.masterGain);
 
-      gain.gain.setValueAtTime(0.5, t);
-      // Stutter effect via volume
-      gain.gain.setValueAtTime(0.5, t + 0.1);
-      gain.gain.setValueAtTime(0, t + 0.15);
-      gain.gain.setValueAtTime(0.5, t + 0.2);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.8);
-
-      osc.start(t);
-      osc.stop(t + 0.8);
+      osc1.start(t);
+      osc2.start(t);
+      osc1.stop(t + 1.5);
+      osc2.stop(t + 1.5);
   }
 
   // 9. Data Typing Tick

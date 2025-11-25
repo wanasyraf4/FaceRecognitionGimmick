@@ -1,3 +1,4 @@
+
 export enum ScannerStatus {
   IDLE = 'IDLE',
   INITIALIZING = 'INITIALIZING',
@@ -9,7 +10,6 @@ export enum ScannerStatus {
   ERROR = 'ERROR',
   FINALIZING = 'FINALIZING',
   COUNTDOWN = 'COUNTDOWN',
-  APPROVAL_CHECKS = 'APPROVAL_CHECKS',
   ONBOARDED = 'ONBOARDED',
   WELCOME = 'WELCOME',
 }

@@ -37,26 +37,6 @@ const SCANNING_TEXTS = [
 
 const fullFsaText = "Labuan FSA is the statutory body responsible for the development and administration of the Labuan International Business and Financial Centre (Labuan IBFC)";
 
-const playCountdownVoice = (num: number) => {
-  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    // Cancel any ongoing speech to keep timing tight
-    window.speechSynthesis.cancel();
-    
-    const utterance = new SpeechSynthesisUtterance(num.toString());
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
-    
-    // Attempt to select a standard English voice if available, otherwise default
-    const voices = window.speechSynthesis.getVoices();
-    const preferredVoice = voices.find(v => v.lang.startsWith('en'));
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
-    }
-
-    window.speechSynthesis.speak(utterance);
-  }
-};
-
 // Helper component for the scrolling matrix data
 const RandomDataStream: React.FC<{ align?: 'left' | 'right' }> = ({ align = 'left' }) => {
   const [text, setText] = useState<string[]>([]);
@@ -336,7 +316,7 @@ const FaceScanner: React.FC = () => {
     // === STATUS: COUNTDOWN ===
     if (status === ScannerStatus.COUNTDOWN) {
       if (countdown > 0) {
-        playCountdownVoice(countdown);
+        SoundEffects.playCountdownBeep();
         const timer = setTimeout(() => setCountdown(c => c - 1), 1000);
         return () => clearTimeout(timer);
       } else {

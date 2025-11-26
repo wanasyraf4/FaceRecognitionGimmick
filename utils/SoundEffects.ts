@@ -299,58 +299,57 @@ class SoundEffectsManager {
       }
   }
 
-  // 7. PEP Alert: "System Attention" Tone
-  // Clean, resonant, authoritative but not alarming.
+  // 7. PEP Alert: "Soft Notification"
+  // Gentle, non-intrusive alert (Sine wave bell).
   playPepAlert() {
       if (!this.ctx || !this.masterGain) return;
       const t = this.ctx.currentTime;
 
-      // Two tones: C5 -> D5 (Major 2nd interval - "Notice this")
-      [523.25, 587.33].forEach((freq, i) => {
-          const osc = this.ctx!.createOscillator();
-          osc.type = 'triangle'; // Clear tone
-          osc.frequency.setValueAtTime(freq, t + (i * 0.12));
-          
-          const gain = this.ctx!.createGain();
-          gain.gain.setValueAtTime(0, t + (i * 0.12));
-          gain.gain.linearRampToValueAtTime(0.1, t + (i * 0.12) + 0.02);
-          gain.gain.exponentialRampToValueAtTime(0.001, t + (i * 0.12) + 0.4);
-          
-          osc.connect(gain);
-          gain.connect(this.masterGain!);
-          
-          osc.start(t + (i * 0.12));
-          osc.stop(t + (i * 0.12) + 0.4);
-      });
+      // Single soft sine bell - A5 (880Hz)
+      const osc = this.ctx.createOscillator();
+      osc.type = 'sine'; 
+      osc.frequency.setValueAtTime(880, t); 
+      
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.08, t + 0.02); // Soft attack
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5); // Smooth tail
+      
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      
+      osc.start(t);
+      osc.stop(t + 0.5);
   }
 
-  // 8. Risk High: "Compliance Warning" Pulse
-  // Solid, weighted low-frequency sound. Serious.
+  // 8. Risk High: "Professional Caution"
+  // Deeper, warmer tone (Filtered Triangle), not a buzzer.
   playRiskAlert() {
       if (!this.ctx || !this.masterGain) return;
       const t = this.ctx.currentTime;
 
-      // A single, heavy, filtered square wave pulse
+      // Warm Triangle/Sine blend - D4 (~300Hz)
       const osc = this.ctx.createOscillator();
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(110, t); // A2
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(300, t); 
       
+      // Heavy Lowpass filter to make it warm/soft and remove buzz
       const filter = this.ctx.createBiquadFilter();
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(800, t);
-      filter.Q.value = 2;
+      filter.frequency.setValueAtTime(600, t);
+      filter.Q.value = 1;
 
       const gain = this.ctx.createGain();
       gain.gain.setValueAtTime(0, t);
-      gain.gain.linearRampToValueAtTime(0.2, t + 0.05);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6); // Controlled decay, not too long
+      gain.gain.linearRampToValueAtTime(0.1, t + 0.1); // Slower attack = softer feel
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.8); 
 
       osc.connect(filter);
       filter.connect(gain);
       gain.connect(this.masterGain);
 
       osc.start(t);
-      osc.stop(t + 0.6);
+      osc.stop(t + 0.8);
   }
 
   // 9. Data Typing Tick
